@@ -184,10 +184,10 @@ export const Calendar: React.FC = () => {
               }}
               transition={{ 
                 type: "spring",
-                stiffness: 100,
-                damping: 26,
-                mass: 2.2,
-                opacity: { duration: 0.4 }
+                stiffness: 260,
+                damping: 32,
+                mass: 1,
+                opacity: { duration: 0.2 }
               }}
               className="relative flex flex-col md:flex-row min-h-[700px] preserve-3d"
             >
@@ -200,12 +200,12 @@ export const Calendar: React.FC = () => {
                 }}
                 animate={{ 
                   opacity: 0,
-                  transition: { duration: 0.8 }
+                  transition: { duration: 0.4 }
                 }}
                 exit={{ 
                   opacity: 1, 
                   background: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.6) 100%)",
-                  transition: { duration: 0.5 }
+                  transition: { duration: 0.3 }
                 }}
               />
               
@@ -221,7 +221,7 @@ export const Calendar: React.FC = () => {
                 animate={{ 
                   opacity: 0,
                   backgroundPosition: "-100% 0%",
-                  transition: { duration: 1.2, ease: "easeOut" }
+                  transition: { duration: 0.6, ease: "easeOut" }
                 }}
               />
 
