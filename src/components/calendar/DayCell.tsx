@@ -6,6 +6,7 @@ interface DayCellProps {
   date: Date;
   currentMonth: Date;
   isSelected: boolean;
+  isInRange: boolean;
   onClick: () => void;
 }
 
@@ -13,6 +14,7 @@ export const DayCell: React.FC<DayCellProps> = ({
   date,
   currentMonth,
   isSelected,
+  isInRange,
   onClick,
 }) => {
   const isCurrentMonth = isSameMonth(date, currentMonth);
@@ -25,6 +27,7 @@ export const DayCell: React.FC<DayCellProps> = ({
         "aspect-square flex items-center justify-center text-sm rounded-lg transition-colors",
         !isCurrentMonth && "text-zinc-300",
         isCurrentMonth && "text-zinc-600 hover:bg-zinc-100",
+        isInRange && !isSelected && "bg-blue-50 text-blue-600",
         isSelected && "bg-blue-600 text-white font-bold",
         isToday && !isSelected && "border-2 border-blue-200 text-blue-600 font-bold"
       )}
