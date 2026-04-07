@@ -48,10 +48,10 @@ export const DayCell: React.FC<DayCellProps> = ({
       className={cn(
         "relative aspect-square flex flex-col items-center justify-center text-sm transition-all duration-300 rounded-2xl group overflow-hidden",
         !isCurrentMonth && "text-zinc-300 dark:text-zinc-700 opacity-0 pointer-events-none",
-        isCurrentMonth && "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+        isCurrentMonth && "text-zinc-600 dark:text-zinc-400 hover:bg-[var(--primary-light)] dark:hover:bg-[var(--primary-dark)]/20",
         isPast && isCurrentMonth && !isSelected && !isInRange && "opacity-40 grayscale-[0.5]",
-        isInRange && !isSelected && isCurrentMonth && cn(rangeColor, "text-zinc-900 dark:text-zinc-100"),
-        isSelected && cn(accentColor, "text-white shadow-xl z-10 scale-105"),
+        isInRange && !isSelected && isCurrentMonth && "bg-[var(--range-bg)] text-zinc-900 dark:text-zinc-100",
+        isSelected && "bg-[var(--primary)] text-white shadow-xl z-10 scale-105",
         isToday && !isSelected && "ring-2 ring-inset ring-zinc-200 dark:ring-zinc-700 font-bold",
         isFocused && !isSelected && "ring-2 ring-zinc-400 dark:ring-zinc-500 ring-offset-2 dark:ring-offset-zinc-900"
       )}

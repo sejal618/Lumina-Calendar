@@ -24,7 +24,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
       <div className="flex items-center gap-4">
         <button
           onClick={onPrev}
-          className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+          className="p-2 hover:bg-[var(--primary-light)] dark:hover:bg-[var(--primary-dark)]/20 rounded-full transition-colors text-zinc-400 hover:text-[var(--primary-dark)] dark:hover:text-[var(--primary-light)]"
         >
           <ChevronLeft size={24} />
         </button>
@@ -33,7 +33,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
         </h2>
         <button
           onClick={onNext}
-          className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+          className="p-2 hover:bg-[var(--primary-light)] dark:hover:bg-[var(--primary-dark)]/20 rounded-full transition-colors text-zinc-400 hover:text-[var(--primary-dark)] dark:hover:text-[var(--primary-light)]"
         >
           <ChevronRight size={24} />
         </button>

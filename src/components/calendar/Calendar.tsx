@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { isSameDay, isWithinInterval, format } from 'date-fns';
 import { useCalendar } from '../../hooks/useCalendar';
@@ -9,6 +9,7 @@ import { NotesPanel } from './NotesPanel';
 import { SpiralBinding } from './SpiralBinding';
 import { MONTH_THEMES, HOLIDAYS } from '../../constants/calendar';
 import { cn } from '../../lib/utils';
+import { extractThemeFromImage, DynamicTheme } from '../../services/themeService';
 
 export const Calendar: React.FC = () => {
   const {
@@ -29,9 +30,10 @@ export const Calendar: React.FC = () => {
   } = useCalendar();
 
   const [direction, setDirection] = useState(0);
+  const [dynamicTheme, setDynamicTheme] = useState<DynamicTheme | null>(null);
 
   // Keyboard navigation
-  React.useEffect(() => {
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;
 
@@ -61,6 +63,27 @@ export const Calendar: React.FC = () => {
 
   const theme = MONTH_THEMES[currentDate.getMonth()];
 
+  // Update dynamic theme when image changes
+  useEffect(() => {
+    let isMounted = true;
+    extractThemeFromImage(theme.image).then(newTheme => {
+      if (isMounted) setDynamicTheme(newTheme);
+    });
+    return () => { isMounted = false; };
+  }, [theme.image]);
+
+  // CSS Variables for the dynamic theme
+  const themeStyles = useMemo(() => {
+    if (!dynamicTheme) return {};
+    return {
+      '--primary': dynamicTheme.primary,
+      '--primary-dark': dynamicTheme.primaryDark,
+      '--primary-light': dynamicTheme.primaryLight,
+      '--range-bg': dynamicTheme.rangeBg,
+      '--accent': dynamicTheme.accent,
+    } as React.CSSProperties;
+  }, [dynamicTheme]);
+
   const handleNext = () => {
     setDirection(1);
     nextMonth();
@@ -82,7 +105,10 @@ export const Calendar: React.FC = () => {
   const isRangeEnd = (date: Date) => range.end && isSameDay(date, range.end);
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 p-4 md:p-8 lg:p-12 transition-colors duration-500">
+    <div 
+      className="min-h-screen bg-zinc-50 dark:bg-zinc-950 p-4 md:p-8 lg:p-12 transition-colors duration-500"
+      style={themeStyles}
+    >
       <motion.div
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -159,8 +185,8 @@ export const Calendar: React.FC = () => {
                           isFocused={isSameDay(day, focusedDate)}
                           onClick={() => handleDateClick(day)}
                           onFocus={() => setFocusedDate(day)}
-                          accentColor={theme.primary}
-                          rangeColor={theme.range}
+                          accentColor="bg-[var(--primary)]"
+                          rangeColor="bg-[var(--range-bg)]"
                         />
                       );
                     })}
@@ -169,7 +195,6 @@ export const Calendar: React.FC = () => {
               </div>
             </div>
 
-            {/* Notes Panel */}
             <div className="w-full lg:w-[320px] xl:w-[380px] p-8 md:p-12 bg-zinc-50/50 dark:bg-zinc-900/50 backdrop-blur-sm rounded-br-[2.5rem]">
               <NotesPanel
                 notes={notes}
@@ -178,7 +203,7 @@ export const Calendar: React.FC = () => {
                 onDeleteNote={deleteNote}
                 onClearRange={() => setRange({ start: null, end: null })}
                 currentDate={currentDate}
-                accentColor={theme.primary}
+                accentColor="bg-[var(--primary)]"
               />
             </div>
           </div>

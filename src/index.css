@@ -32,6 +32,11 @@
   --font-display: "Outfit", sans-serif;
   --font-serif: "Playfair Display", serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-dynamic-primary: var(--dynamic-primary, #3b82f6);
+  --color-dynamic-secondary: var(--dynamic-secondary, #eff6ff);
+  --color-dynamic-accent: var(--dynamic-accent, #2563eb);
+  --color-dynamic-muted: var(--dynamic-muted, #94a3b8);
 }
 
 @layer base {
