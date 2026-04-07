@@ -117,7 +117,7 @@ export const Calendar: React.FC = () => {
                 ))}
               </div>
 
-              <div className="relative overflow-hidden">
+              <div className="relative overflow-hidden -m-4 p-4">
                 <AnimatePresence mode="wait" custom={direction}>
                   <motion.div
                     key={currentDate.toISOString()}
@@ -176,6 +176,7 @@ export const Calendar: React.FC = () => {
                 range={range}
                 onAddNote={addNote}
                 onDeleteNote={deleteNote}
+                onClearRange={() => setRange({ start: null, end: null })}
                 currentDate={currentDate}
                 accentColor={theme.primary}
               />
