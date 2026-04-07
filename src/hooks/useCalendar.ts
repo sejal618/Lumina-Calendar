@@ -6,43 +6,59 @@ import {
   endOfMonth, 
   startOfWeek, 
   endOfWeek, 
-  eachDayOfInterval,
-  isBefore,
+  eachDayOfInterval, 
+  format,
   isSameDay,
-  format
+  isBefore,
+  startOfToday
 } from 'date-fns';
-
-export interface Note {
-  id: string;
-  dateKey: string;
-  content: string;
-  type: 'day' | 'range';
-  range?: { start: string; end: string };
-}
+import { DateRange, Note } from '../types/calendar';
 
 export function useCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [range, setRange] = useState<{ start: Date | null; end: Date | null }>({ start: null, end: null });
+  const [range, setRange] = useState<DateRange>({ start: null, end: null });
   const [notes, setNotes] = useState<Note[]>([]);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('calendar-theme') === 'dark';
+    }
+    return false;
+  });
 
   // Persistence
   useEffect(() => {
     const savedNotes = localStorage.getItem('calendar-notes');
     if (savedNotes) setNotes(JSON.parse(savedNotes));
+    
+    const savedTheme = localStorage.getItem('calendar-theme');
+    if (savedTheme) setIsDarkMode(savedTheme === 'dark');
   }, []);
 
   useEffect(() => {
     localStorage.setItem('calendar-notes', JSON.stringify(notes));
   }, [notes]);
 
+  useEffect(() => {
+    localStorage.setItem('calendar-theme', isDarkMode ? 'dark' : 'light');
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
   const days = useMemo(() => {
-    const start = startOfWeek(startOfMonth(currentDate));
-    const end = endOfWeek(endOfMonth(currentDate));
+    const start = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 0 });
+    const end = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 0 });
     return eachDayOfInterval({ start, end });
   }, [currentDate]);
 
-  const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
-  const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
+  const nextMonth = () => {
+    setCurrentDate(addMonths(currentDate, 1));
+  };
+  const prevMonth = () => {
+    setCurrentDate(subMonths(currentDate, 1));
+  };
 
   const handleDateClick = (date: Date) => {
     if (!range.start || (range.start && range.end)) {
@@ -76,10 +92,13 @@ export function useCalendar() {
     days,
     range,
     notes,
+    isDarkMode,
+    nextMonth,
+    prevMonth,
     handleDateClick,
     addNote,
     deleteNote,
-    nextMonth,
-    prevMonth,
+    setIsDarkMode,
+    setRange
   };
 }

@@ -1,9 +1,14 @@
-import React from 'react';
-import { format, isSameDay, isWithinInterval } from 'date-fns';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { isSameDay, isWithinInterval, format } from 'date-fns';
 import { useCalendar } from '../../hooks/useCalendar';
+import { HeroSection } from './HeroSection';
+import { CalendarHeader } from './CalendarHeader';
 import { DayCell } from './DayCell';
 import { NotesPanel } from './NotesPanel';
+import { SpiralBinding } from './SpiralBinding';
+import { MONTH_THEMES, HOLIDAYS } from '../../constants/calendar';
+import { cn } from '../../lib/utils';
 
 export const Calendar: React.FC = () => {
   const {
@@ -11,12 +16,29 @@ export const Calendar: React.FC = () => {
     days,
     range,
     notes,
+    isDarkMode,
+    nextMonth,
+    prevMonth,
     handleDateClick,
     addNote,
     deleteNote,
-    nextMonth,
-    prevMonth,
+    setIsDarkMode,
+    setRange
   } = useCalendar();
+
+  const [direction, setDirection] = useState(0);
+
+  const theme = MONTH_THEMES[currentDate.getMonth()];
+
+  const handleNext = () => {
+    setDirection(1);
+    nextMonth();
+  };
+
+  const handlePrev = () => {
+    setDirection(-1);
+    prevMonth();
+  };
 
   const isInRange = (date: Date) => {
     if (range.start && range.end) {
@@ -25,67 +47,127 @@ export const Calendar: React.FC = () => {
     return false;
   };
 
-  const isSelected = (date: Date) => 
-    (range.start && isSameDay(date, range.start)) || 
-    (range.end && isSameDay(date, range.end));
+  const isRangeStart = (date: Date) => range.start && isSameDay(date, range.start);
+  const isRangeEnd = (date: Date) => range.end && isSameDay(date, range.end);
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex items-center justify-center p-4 md:p-8">
-      <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl flex flex-col md:flex-row overflow-hidden border border-zinc-100">
-        {/* Calendar Grid */}
-        <div className="flex-1 p-8 md:p-12 border-b md:border-b-0 md:border-r border-zinc-100">
-          <div className="flex items-center justify-between mb-12">
-            <h2 className="text-3xl font-black text-zinc-900 tracking-tight">
-              {format(currentDate, 'MMMM yyyy')}
-            </h2>
-            <div className="flex gap-3">
-              <button onClick={prevMonth} className="p-3 hover:bg-zinc-100 rounded-2xl transition-all active:scale-95">
-                <ChevronLeft className="w-6 h-6 text-zinc-600" />
-              </button>
-              <button onClick={nextMonth} className="p-3 hover:bg-zinc-100 rounded-2xl transition-all active:scale-95">
-                <ChevronRight className="w-6 h-6 text-zinc-600" />
-              </button>
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 p-4 md:p-8 lg:p-12 transition-colors duration-500">
+      <motion.div
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="max-w-7xl mx-auto relative bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] dark:shadow-[0_50px_100px_-20px_rgba(0,0,0,0.4)] overflow-visible border border-zinc-200 dark:border-zinc-800"
+      >
+        <SpiralBinding />
+
+        <div className="flex flex-col md:flex-row min-h-[700px]">
+          {/* Left: Hero Section */}
+          <div className="w-full md:w-[40%] lg:w-[35%]">
+            <HeroSection currentDate={currentDate} />
+          </div>
+
+          {/* Right: Calendar & Notes */}
+          <div className="flex-1 flex flex-col lg:flex-row">
+            {/* Calendar Grid */}
+            <div className="flex-1 p-8 md:p-12 border-b lg:border-b-0 lg:border-r border-zinc-100 dark:border-zinc-800">
+              <CalendarHeader
+                currentDate={currentDate}
+                onPrev={handlePrev}
+                onNext={handleNext}
+                isDarkMode={isDarkMode}
+                onToggleTheme={() => setIsDarkMode(!isDarkMode)}
+                accentColor={theme.primary}
+              />
+
+              <div className="grid grid-cols-7 gap-2 mb-6">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                  <div key={day} className="text-center text-[10px] font-black text-zinc-300 dark:text-zinc-700 uppercase tracking-[0.3em] py-2">
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              <div className="relative overflow-hidden">
+                <AnimatePresence mode="wait" custom={direction}>
+                  <motion.div
+                    key={currentDate.toISOString()}
+                    custom={direction}
+                    initial={{ 
+                      opacity: 0, 
+                      x: direction * 50,
+                      rotateY: direction * 15
+                    }}
+                    animate={{ opacity: 1, x: 0, rotateY: 0 }}
+                    exit={{ 
+                      opacity: 0, 
+                      x: direction * -50,
+                      rotateY: direction * -15
+                    }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    className="grid grid-cols-7 gap-2"
+                    style={{ perspective: 1000 }}
+                  >
+                    {days.map((day) => {
+                      const dateKey = format(day, 'yyyy-MM-dd');
+                      const holiday = HOLIDAYS.find(h => h.date === dateKey);
+                      const hasNote = notes.some(n => n.dateKey === dateKey);
+
+                      return (
+                        <DayCell
+                          key={day.toISOString()}
+                          date={day}
+                          currentMonth={currentDate}
+                          isSelected={isRangeStart(day) || isRangeEnd(day)}
+                          isInRange={isInRange(day)}
+                          isRangeStart={isRangeStart(day)}
+                          isRangeEnd={isRangeEnd(day)}
+                          holiday={holiday}
+                          hasNote={hasNote}
+                          onClick={() => handleDateClick(day)}
+                          accentColor={theme.primary}
+                          rangeColor={theme.range}
+                        />
+                      );
+                    })}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* Notes Panel */}
+            <div className="w-full lg:w-[320px] xl:w-[380px] p-8 md:p-12 bg-zinc-50/50 dark:bg-zinc-900/50 backdrop-blur-sm rounded-br-[2.5rem]">
+              <NotesPanel
+                notes={notes}
+                range={range}
+                onAddNote={addNote}
+                onDeleteNote={deleteNote}
+                currentDate={currentDate}
+                accentColor={theme.primary}
+              />
             </div>
           </div>
+        </div>
+      </motion.div>
 
-          <div className="grid grid-cols-7 gap-2 mb-6">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="text-center text-[10px] font-black text-zinc-300 uppercase tracking-[0.2em] py-2">
-                {day}
-              </div>
-            ))}
+      {/* Footer Info */}
+      <div className="max-w-7xl mx-auto mt-12 flex flex-col md:flex-row items-center justify-between gap-8 px-4 opacity-40 hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-8">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-600 mb-2">Edition</span>
+            <span className="text-sm font-serif italic text-zinc-500 dark:text-zinc-400">Lumina Professional</span>
           </div>
-
-          <div className="grid grid-cols-7 gap-2">
-            {days.map((day) => {
-              const dateKey = format(day, 'yyyy-MM-dd');
-              const hasNote = notes.some(n => n.dateKey === dateKey);
-              
-              return (
-                <DayCell
-                  key={day.toISOString()}
-                  date={day}
-                  currentMonth={currentDate}
-                  isSelected={isSelected(day) || false}
-                  isInRange={isInRange(day)}
-                  hasNote={hasNote}
-                  onClick={() => handleDateClick(day)}
-                />
-              );
-            })}
+          <div className="w-px h-8 bg-zinc-200 dark:bg-zinc-800" />
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-600 mb-2">Status</span>
+            <span className="text-sm font-medium text-zinc-400 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Synced to Local
+            </span>
           </div>
         </div>
-
-        {/* Notes Panel */}
-        <div className="w-full md:w-[350px] p-8 md:p-12 bg-zinc-50/50">
-          <NotesPanel
-            notes={notes}
-            range={range}
-            onAddNote={addNote}
-            onDeleteNote={deleteNote}
-            currentDate={currentDate}
-            accentColor="bg-zinc-900"
-          />
+        
+        <div className="text-right hidden md:block">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-600 mb-1">Interactive Wall Calendar</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">Designed for clarity and focus.</p>
         </div>
       </div>
     </div>
