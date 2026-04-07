@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { 
   addMonths, 
   subMonths, 
@@ -8,12 +8,32 @@ import {
   endOfWeek, 
   eachDayOfInterval,
   isBefore,
-  isSameDay
+  isSameDay,
+  format
 } from 'date-fns';
+
+export interface Note {
+  id: string;
+  dateKey: string;
+  content: string;
+  type: 'day' | 'range';
+  range?: { start: string; end: string };
+}
 
 export function useCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [range, setRange] = useState<{ start: Date | null; end: Date | null }>({ start: null, end: null });
+  const [notes, setNotes] = useState<Note[]>([]);
+
+  // Persistence
+  useEffect(() => {
+    const savedNotes = localStorage.getItem('calendar-notes');
+    if (savedNotes) setNotes(JSON.parse(savedNotes));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('calendar-notes', JSON.stringify(notes));
+  }, [notes]);
 
   const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentDate));
@@ -36,11 +56,29 @@ export function useCalendar() {
     }
   };
 
+  const addNote = (content: string, type: Note['type'], dateKey: string, rangeData?: Note['range']) => {
+    const newNote: Note = {
+      id: Math.random().toString(36).substr(2, 9),
+      dateKey,
+      content,
+      type,
+      range: rangeData
+    };
+    setNotes(prev => [...prev, newNote]);
+  };
+
+  const deleteNote = (id: string) => {
+    setNotes(prev => prev.filter(n => n.id !== id));
+  };
+
   return {
     currentDate,
     days,
     range,
+    notes,
     handleDateClick,
+    addNote,
+    deleteNote,
     nextMonth,
     prevMonth,
   };

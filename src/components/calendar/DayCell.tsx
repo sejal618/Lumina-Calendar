@@ -7,6 +7,7 @@ interface DayCellProps {
   currentMonth: Date;
   isSelected: boolean;
   isInRange: boolean;
+  hasNote: boolean;
   onClick: () => void;
 }
 
@@ -15,6 +16,7 @@ export const DayCell: React.FC<DayCellProps> = ({
   currentMonth,
   isSelected,
   isInRange,
+  hasNote,
   onClick,
 }) => {
   const isCurrentMonth = isSameMonth(date, currentMonth);
@@ -24,7 +26,7 @@ export const DayCell: React.FC<DayCellProps> = ({
     <button
       onClick={onClick}
       className={cn(
-        "aspect-square flex items-center justify-center text-sm rounded-lg transition-colors",
+        "relative aspect-square flex items-center justify-center text-sm rounded-lg transition-colors",
         !isCurrentMonth && "text-zinc-300",
         isCurrentMonth && "text-zinc-600 hover:bg-zinc-100",
         isInRange && !isSelected && "bg-blue-50 text-blue-600",
@@ -33,6 +35,9 @@ export const DayCell: React.FC<DayCellProps> = ({
       )}
     >
       {format(date, 'd')}
+      {hasNote && (
+        <div className="absolute bottom-1 w-1 h-1 rounded-full bg-zinc-400" />
+      )}
     </button>
   );
 };
