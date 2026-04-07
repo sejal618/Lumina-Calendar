@@ -24,6 +24,7 @@ export function useCalendar() {
     }
     return false;
   });
+  const [focusedDate, setFocusedDate] = useState<Date>(new Date());
 
   // Persistence
   useEffect(() => {
@@ -54,10 +55,14 @@ export function useCalendar() {
   }, [currentDate]);
 
   const nextMonth = () => {
-    setCurrentDate(addMonths(currentDate, 1));
+    const next = addMonths(currentDate, 1);
+    setCurrentDate(next);
+    setFocusedDate(startOfMonth(next));
   };
   const prevMonth = () => {
-    setCurrentDate(subMonths(currentDate, 1));
+    const prev = subMonths(currentDate, 1);
+    setCurrentDate(prev);
+    setFocusedDate(startOfMonth(prev));
   };
 
   const handleDateClick = (date: Date) => {
@@ -93,6 +98,8 @@ export function useCalendar() {
     range,
     notes,
     isDarkMode,
+    focusedDate,
+    setFocusedDate,
     nextMonth,
     prevMonth,
     handleDateClick,

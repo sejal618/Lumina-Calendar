@@ -12,7 +12,10 @@ interface DayCellProps {
   isRangeEnd: boolean;
   holiday?: Holiday;
   hasNote: boolean;
+  noteContent?: string;
+  isFocused: boolean;
   onClick: () => void;
+  onFocus: () => void;
   accentColor: string;
   rangeColor: string;
 }
@@ -26,7 +29,10 @@ export const DayCell: React.FC<DayCellProps> = ({
   isRangeEnd,
   holiday,
   hasNote,
+  noteContent,
+  isFocused,
   onClick,
+  onFocus,
   accentColor,
   rangeColor
 }) => {
@@ -37,6 +43,7 @@ export const DayCell: React.FC<DayCellProps> = ({
   return (
     <button
       onClick={onClick}
+      onFocus={onFocus}
       disabled={!isCurrentMonth}
       className={cn(
         "relative aspect-square flex flex-col items-center justify-center text-sm transition-all duration-300 rounded-2xl group overflow-hidden",
@@ -45,7 +52,8 @@ export const DayCell: React.FC<DayCellProps> = ({
         isPast && isCurrentMonth && !isSelected && !isInRange && "opacity-40 grayscale-[0.5]",
         isInRange && !isSelected && isCurrentMonth && cn(rangeColor, "text-zinc-900 dark:text-zinc-100"),
         isSelected && cn(accentColor, "text-white shadow-xl z-10 scale-105"),
-        isToday && !isSelected && "ring-2 ring-inset ring-zinc-200 dark:ring-zinc-700 font-bold"
+        isToday && !isSelected && "ring-2 ring-inset ring-zinc-200 dark:ring-zinc-700 font-bold",
+        isFocused && !isSelected && "ring-2 ring-zinc-400 dark:ring-zinc-500 ring-offset-2 dark:ring-offset-zinc-900"
       )}
     >
       <span className={cn(
@@ -67,10 +75,10 @@ export const DayCell: React.FC<DayCellProps> = ({
       )}
 
       {/* Tooltip on hover */}
-      {holiday && (
+      {(holiday || (hasNote && noteContent)) && (
         <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
-          <div className="bg-zinc-800 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap">
-            {holiday.name}
+          <div className="bg-zinc-800 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap max-w-[150px] truncate">
+            {holiday ? holiday.name : noteContent}
           </div>
         </div>
       )}

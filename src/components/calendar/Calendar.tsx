@@ -17,6 +17,8 @@ export const Calendar: React.FC = () => {
     range,
     notes,
     isDarkMode,
+    focusedDate,
+    setFocusedDate,
     nextMonth,
     prevMonth,
     handleDateClick,
@@ -27,6 +29,35 @@ export const Calendar: React.FC = () => {
   } = useCalendar();
 
   const [direction, setDirection] = useState(0);
+
+  // Keyboard navigation
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;
+
+      const { addDays, subDays } = require('date-fns');
+      let newDate = focusedDate;
+
+      switch (e.key) {
+        case 'ArrowUp': newDate = subDays(focusedDate, 7); break;
+        case 'ArrowDown': newDate = addDays(focusedDate, 7); break;
+        case 'ArrowLeft': newDate = subDays(focusedDate, 1); break;
+        case 'ArrowRight': newDate = addDays(focusedDate, 1); break;
+        case 'Enter': handleDateClick(focusedDate); return;
+        default: return;
+      }
+
+      e.preventDefault();
+      if (newDate.getMonth() !== currentDate.getMonth()) {
+        if (newDate > currentDate) handleNext();
+        else handlePrev();
+      }
+      setFocusedDate(newDate);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [focusedDate, currentDate]);
 
   const theme = MONTH_THEMES[currentDate.getMonth()];
 
@@ -109,7 +140,9 @@ export const Calendar: React.FC = () => {
                     {days.map((day) => {
                       const dateKey = format(day, 'yyyy-MM-dd');
                       const holiday = HOLIDAYS.find(h => h.date === dateKey);
-                      const hasNote = notes.some(n => n.dateKey === dateKey);
+                      const dayNotes = notes.filter(n => n.dateKey === dateKey);
+                      const hasNote = dayNotes.length > 0;
+                      const noteContent = dayNotes[0]?.content;
 
                       return (
                         <DayCell
@@ -122,7 +155,10 @@ export const Calendar: React.FC = () => {
                           isRangeEnd={isRangeEnd(day)}
                           holiday={holiday}
                           hasNote={hasNote}
+                          noteContent={noteContent}
+                          isFocused={isSameDay(day, focusedDate)}
                           onClick={() => handleDateClick(day)}
+                          onFocus={() => setFocusedDate(day)}
                           accentColor={theme.primary}
                           rangeColor={theme.range}
                         />
