@@ -14,10 +14,12 @@ I built this production-level, visually stunning, and highly interactive Wall Ca
 - **Persistence**: I used `localStorage` to ensure all notes and theme preferences are saved between sessions.
 - **Responsive Design**: I engineered a flawless transition from a sophisticated side-by-side desktop layout to a clean, functional mobile view.
 - **Advanced UX Details**:
-  - 3D-inspired page flip animations using Framer Motion.
+  - **3D Page Flip**: Realistic paper-flipping animations with depth and shadow transitions using Framer Motion.
+  - **Stencil Effect**: A sophisticated "cut-out" digit effect for selected dates that matches the range background tone.
+  - **Mobile Gestures**: Full swipe-to-navigate and long-press-to-drag range selection support.
+  - **Dynamic Theme Extraction**: Real-time color palette generation from hero images using `chroma-js`.
   - Holiday markers with interactive tooltips.
   - Full Dark Mode support.
-  - Keyboard accessibility (e.g., Enter to add notes).
 
 ## 🛠 My Tech Stack
 
@@ -66,7 +68,8 @@ src/
 
 - **Range Selection**: I managed this in `useCalendar.ts`. I wrote the logic to set the start date on the first click and either reset or set the end date on the second click, ensuring the start date is always chronologically before the end date.
 - **Theme Adaptation**: I created a mapping in `constants/calendar.ts` that links each month index to a specific Tailwind color palette and Unsplash image. This is reactively applied to the UI via the `theme` object I designed.
-- **Animations**: I used `AnimatePresence` from Framer Motion to create the "flip" effect when changing months, using `custom` props to determine the direction of the slide and rotation based on user navigation.
+- **Animations & Gestures**: I used `AnimatePresence` and `@use-gesture/react` to create a tactile experience. The 3D flip responds to swipe velocity, and long-pressing a date triggers a haptic pulse before entering "drag-to-select" mode.
+- **Theme Extraction**: I implemented a `themeService` that uses `chroma-js` to extract dominant colors from the month's hero image, dynamically generating a cohesive palette (primary, range background, and high-contrast foregrounds) for every month.
 
 ## 🚀 Deployment (Vercel)
 
@@ -81,7 +84,9 @@ src/
 
 I wanted to bridge the gap between physical aesthetics and digital utility. You'll notice the **Spiral Binding** and **Hero Imagery** I added to give it that classic wall-calendar feel. 
 
-One of the features I'm most proud of is the **Dynamic Theming**—notice how the entire color palette shifts as I navigate between months, reflecting the season.
+One of the features I'm most proud of is the **Dynamic Theme Extraction**—notice how the entire color palette, including the **Stencil Effect** on selected dates, shifts as I navigate between months.
+
+The **Mobile Gestures** I implemented make the experience feel native. I can swipe to flip pages or long-press and drag to select a date range with haptic feedback.
 
 The **Range Selection** I implemented is highly intuitive. I can click a start and end date, and the UI provides clear feedback. I can then add **Range-specific notes** which I've ensured are persisted locally. 
 

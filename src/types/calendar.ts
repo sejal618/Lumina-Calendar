@@ -14,6 +14,7 @@ export interface DateRange {
 export interface Holiday {
   date: string; // YYYY-MM-DD
   name: string;
+  type: 'festival' | 'public';
 }
 
 export type ThemeColor = {

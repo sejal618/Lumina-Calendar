@@ -150,8 +150,26 @@ export const Calendar: React.FC = () => {
                   <ChevronLeft size={24} />
                 </button>
                 
-                {/* Spacer for the flipping title */}
-                <div className="w-[280px]" />
+                <div className="flex flex-col items-center justify-center w-[280px]">
+                  <AnimatePresence mode="wait" custom={direction}>
+                    <motion.div
+                      key={currentDate.getMonth()}
+                      custom={direction}
+                      initial={{ y: 20, opacity: 0, rotateX: -40 }}
+                      animate={{ y: 0, opacity: 1, rotateX: 0 }}
+                      exit={{ y: -20, opacity: 0, rotateX: 40 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      className="flex flex-col items-center"
+                    >
+                      <h2 className="text-6xl md:text-7xl font-serif italic text-zinc-900 dark:text-zinc-100 tracking-tight">
+                        {format(currentDate, 'MMMM')}
+                      </h2>
+                      <span className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--primary)] mt-1 opacity-80">
+                        Anno Domini {format(currentDate, 'yyyy')}
+                      </span>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
 
                 <button
                   onClick={handleNext}
