@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { isSameDay, isWithinInterval, format } from 'date-fns';
-import { ChevronLeft, ChevronRight, Moon, Sun } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Moon, Sun, Download } from 'lucide-react';
+import { toPng } from 'html-to-image';
 import { useCalendar } from '../../hooks/useCalendar';
 import { HeroSection } from './HeroSection';
 import { DayCell } from './DayCell';
@@ -36,6 +37,29 @@ export const Calendar: React.FC = () => {
   } = useCalendar();
 
   const [direction, setDirection] = useState(0);
+  const calendarRef = useRef<HTMLDivElement>(null);
+
+  const handleDownload = async () => {
+    if (calendarRef.current === null) return;
+    
+    try {
+      // Temporarily hide elements that shouldn't be in the download if needed
+      // But for now let's just capture the whole thing
+      const dataUrl = await toPng(calendarRef.current, {
+        cacheBust: true,
+        backgroundColor: isDarkMode ? '#09090b' : '#fafafa',
+        style: {
+          borderRadius: '2.5rem',
+        }
+      });
+      const link = document.createElement('a');
+      link.download = `calendar-${format(currentDate, 'yyyy-MM')}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Failed to download calendar image', err);
+    }
+  };
 
   const handleNext = () => {
     setDirection(1);
@@ -134,6 +158,7 @@ export const Calendar: React.FC = () => {
       style={themeStyles}
     >
       <motion.div
+        ref={calendarRef}
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="max-w-7xl mx-auto relative bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] dark:shadow-[0_50px_100px_-20px_rgba(0,0,0,0.4)] overflow-visible border border-zinc-200 dark:border-zinc-800"
@@ -164,12 +189,22 @@ export const Calendar: React.FC = () => {
                 </button>
               </div>
 
-              <button
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl text-zinc-500 dark:text-zinc-400 hover:scale-110 transition-transform border border-zinc-200/50 dark:border-zinc-700/50 flex-shrink-0"
-              >
-                {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleDownload}
+                  title="Download Calendar"
+                  className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl text-zinc-500 dark:text-zinc-400 hover:scale-110 transition-transform border border-zinc-200/50 dark:border-zinc-700/50 flex-shrink-0"
+                >
+                  <Download size={20} />
+                </button>
+
+                <button
+                  onClick={() => setIsDarkMode(!isDarkMode)}
+                  className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl text-zinc-500 dark:text-zinc-400 hover:scale-110 transition-transform border border-zinc-200/50 dark:border-zinc-700/50 flex-shrink-0"
+                >
+                  {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                </button>
+              </div>
             </div>
           </div>
         </div>

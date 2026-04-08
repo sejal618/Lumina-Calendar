@@ -101,6 +101,7 @@ export const NotesPanel: React.FC<NotesPanelProps> = ({
                 )}
                 <button
                   onClick={() => onDeleteNote(note.id)}
+                  data-export-ignore
                   className="absolute top-4 right-4 text-zinc-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
                 >
                   <Trash2 size={14} />
@@ -154,7 +155,7 @@ export const NotesPanel: React.FC<NotesPanelProps> = ({
         </AnimatePresence>
       </div>
 
-      <div className="mt-6 space-y-4">
+      <div className="mt-6 space-y-4" data-export-ignore>
         <div className="relative">
           <textarea
             value={newNote}

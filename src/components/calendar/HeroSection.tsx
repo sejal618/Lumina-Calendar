@@ -55,6 +55,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           onClick={() => fileInputRef.current?.click()}
+          data-export-ignore
           className="p-2 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white rounded-full transition-all border border-white/20 opacity-0 group-hover:opacity-100"
           title="Upload Hero Image"
         >
@@ -70,20 +71,20 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         />
       </div>
 
-      <div className="absolute bottom-8 left-8 text-white">
+      <div className="absolute bottom-4 left-4 md:bottom-8 md:left-8 text-white">
         <motion.div
           initial={{ x: -20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <h1 className="text-6xl font-serif font-black tracking-tighter leading-none mb-2">
+          <h1 className="text-4xl md:text-6xl font-serif font-black tracking-tighter leading-none mb-2">
             {format(currentDate, 'MM')}
           </h1>
           <div className="flex flex-col">
-            <span className="text-2xl font-bold uppercase tracking-[0.2em]">
+            <span className="text-xl md:text-2xl font-bold uppercase tracking-[0.2em]">
               {format(currentDate, 'MMMM')}
             </span>
-            <span className="text-lg font-light opacity-60 tracking-widest">
+            <span className="text-sm md:text-lg font-light opacity-60 tracking-widest">
               {format(currentDate, 'yyyy')}
             </span>
           </div>
