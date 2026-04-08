@@ -19,6 +19,8 @@ export const Calendar: React.FC = () => {
     notes,
     isDarkMode,
     focusedDate,
+    isDragging,
+    customImages,
     setFocusedDate,
     nextMonth,
     prevMonth,
@@ -26,11 +28,11 @@ export const Calendar: React.FC = () => {
     setRangeStart,
     updateRangeEnd,
     endDragging,
-    isDragging,
     addNote,
     deleteNote,
     setIsDarkMode,
-    setRange
+    setRange,
+    setCustomImage
   } = useCalendar();
 
   const [direction, setDirection] = useState(0);
@@ -91,15 +93,16 @@ export const Calendar: React.FC = () => {
   }, [focusedDate, currentDate]);
 
   const theme = MONTH_THEMES[currentDate.getMonth()];
+  const currentMonthImage = customImages[currentDate.getMonth()] || theme.image;
 
   // Update dynamic theme when image changes
   useEffect(() => {
     let isMounted = true;
-    extractThemeFromImage(theme.image).then(newTheme => {
+    extractThemeFromImage(currentMonthImage).then(newTheme => {
       if (isMounted) setDynamicTheme(newTheme);
     });
     return () => { isMounted = false; };
-  }, [theme.image]);
+  }, [currentMonthImage]);
 
   // CSS Variables for the dynamic theme
   const themeStyles = useMemo(() => {
@@ -150,26 +153,8 @@ export const Calendar: React.FC = () => {
                   <ChevronLeft size={24} />
                 </button>
                 
-                <div className="flex flex-col items-center justify-center w-[280px]">
-                  <AnimatePresence mode="wait" custom={direction}>
-                    <motion.div
-                      key={currentDate.getMonth()}
-                      custom={direction}
-                      initial={{ y: 20, opacity: 0, rotateX: -40 }}
-                      animate={{ y: 0, opacity: 1, rotateX: 0 }}
-                      exit={{ y: -20, opacity: 0, rotateX: 40 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                      className="flex flex-col items-center"
-                    >
-                      <h2 className="text-6xl md:text-7xl font-serif italic text-zinc-900 dark:text-zinc-100 tracking-tight">
-                        {format(currentDate, 'MMMM')}
-                      </h2>
-                      <span className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--primary)] mt-1 opacity-80">
-                        Anno Domini {format(currentDate, 'yyyy')}
-                      </span>
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
+                {/* Spacer for the flipping title */}
+                <div className="w-[280px]" />
 
                 <button
                   onClick={handleNext}
@@ -270,7 +255,11 @@ export const Calendar: React.FC = () => {
 
               {/* Left: Hero Section */}
               <div className="w-full md:w-[40%] lg:w-[35%]">
-                <HeroSection currentDate={currentDate} />
+                <HeroSection 
+                  currentDate={currentDate} 
+                  customImage={customImages[currentDate.getMonth()]}
+                  onImageChange={(url) => setCustomImage(currentDate.getMonth(), url)}
+                />
               </div>
 
               {/* Right: Calendar & Notes */}

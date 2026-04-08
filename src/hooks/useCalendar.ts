@@ -25,6 +25,13 @@ export function useCalendar() {
     return false;
   });
   const [focusedDate, setFocusedDate] = useState<Date>(new Date());
+  const [customImages, setCustomImages] = useState<Record<number, string>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('calendar-custom-images');
+      return saved ? JSON.parse(saved) : {};
+    }
+    return {};
+  });
 
   // Persistence
   useEffect(() => {
@@ -47,6 +54,10 @@ export function useCalendar() {
       document.documentElement.classList.remove('dark');
     }
   }, [isDarkMode]);
+
+  useEffect(() => {
+    localStorage.setItem('calendar-custom-images', JSON.stringify(customImages));
+  }, [customImages]);
 
   const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 0 });
@@ -113,6 +124,10 @@ export function useCalendar() {
     setNotes(prev => prev.filter(n => n.id !== id));
   };
 
+  const setCustomImage = (month: number, imageUrl: string) => {
+    setCustomImages(prev => ({ ...prev, [month]: imageUrl }));
+  };
+
   return {
     currentDate,
     days,
@@ -121,6 +136,7 @@ export function useCalendar() {
     isDarkMode,
     focusedDate,
     isDragging,
+    customImages,
     setFocusedDate,
     nextMonth,
     prevMonth,
@@ -131,6 +147,7 @@ export function useCalendar() {
     addNote,
     deleteNote,
     setIsDarkMode,
-    setRange
+    setRange,
+    setCustomImage
   };
 }

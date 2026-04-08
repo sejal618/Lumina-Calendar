@@ -125,7 +125,11 @@ export const DayCell: React.FC<DayCellProps> = ({
       {holiday && (
         <div className={cn(
           "absolute top-2 right-2 w-1.5 h-1.5 rounded-full transition-colors duration-300",
-          isSelected ? "bg-white/60" : holiday.type === 'public' ? "bg-red-500" : "bg-orange-400"
+          isSelected 
+            ? "bg-[var(--range-text)] opacity-60" 
+            : holiday.type === 'public' 
+              ? "bg-[var(--primary)]" 
+              : "bg-[var(--accent)]"
         )} />
       )}
 
@@ -146,7 +150,7 @@ export const DayCell: React.FC<DayCellProps> = ({
               {holiday && (
                 <div className={cn(
                   "w-1.5 h-1.5 rounded-full",
-                  holiday.type === 'public' ? "bg-red-500" : "bg-orange-400"
+                  holiday.type === 'public' ? "bg-[var(--primary)]" : "bg-[var(--accent)]"
                 )} />
               )}
               {holiday ? holiday.name : noteContent}
