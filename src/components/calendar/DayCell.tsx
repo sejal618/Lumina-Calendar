@@ -15,6 +15,7 @@ interface DayCellProps {
   holiday?: Holiday;
   hasNote: boolean;
   noteContent?: string;
+  noteColor?: string;
   isFocused: boolean;
   isDragging: boolean;
   onClick: () => void;
@@ -26,7 +27,7 @@ interface DayCellProps {
   rangeColor: string;
 }
 
-export const DayCell: React.FC<DayCellProps> = ({
+export const DayCell: React.FC<DayCellProps> = React.memo(({
   date,
   currentMonth,
   isSelected,
@@ -36,6 +37,7 @@ export const DayCell: React.FC<DayCellProps> = ({
   holiday,
   hasNote,
   noteContent,
+  noteColor,
   isFocused,
   isDragging,
   onClick,
@@ -123,18 +125,27 @@ export const DayCell: React.FC<DayCellProps> = ({
       </span>
 
       {holiday && (
-        <div className={cn(
-          "absolute top-2 right-2 w-1.5 h-1.5 rounded-full transition-colors duration-300",
-          isSelected 
-            ? "bg-[var(--range-text)] opacity-60" 
-            : holiday.type === 'public' 
-              ? "bg-[var(--primary)]" 
-              : "bg-[var(--accent)]"
-        )} />
+        <div 
+          className={cn(
+            "absolute top-2 right-2 w-1.5 h-1.5 rotate-45 transition-all duration-300 shadow-sm",
+            isSelected 
+              ? "bg-[var(--range-text)] opacity-60" 
+              : holiday.type === 'public' 
+                ? "bg-indigo-500 dark:bg-indigo-400" 
+                : "bg-cyan-500 dark:bg-cyan-400"
+          )} 
+          title={holiday.name}
+        />
       )}
 
       {hasNote && !isSelected && (
-        <div className={cn("absolute bottom-2 w-1 h-1 rounded-full bg-zinc-400 dark:bg-zinc-600")} />
+        <div 
+          className={cn(
+            "absolute bottom-2 w-1.5 h-1.5 rounded-full shadow-sm transition-transform group-hover:scale-125",
+            !noteColor && "bg-[var(--primary)] opacity-60 dark:opacity-80"
+          )} 
+          style={noteColor ? { backgroundColor: noteColor } : undefined}
+        />
       )}
 
       {/* Tooltip */}
@@ -149,11 +160,18 @@ export const DayCell: React.FC<DayCellProps> = ({
             <div className="bg-zinc-900/90 dark:bg-zinc-100/90 backdrop-blur-md text-white dark:text-zinc-900 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-2xl whitespace-nowrap border border-white/10 dark:border-zinc-900/10 flex items-center gap-2">
               {holiday && (
                 <div className={cn(
-                  "w-1.5 h-1.5 rounded-full",
-                  holiday.type === 'public' ? "bg-[var(--primary)]" : "bg-[var(--accent)]"
+                  "w-1.5 h-1.5 rotate-45",
+                  holiday.type === 'public' ? "bg-indigo-500" : "bg-cyan-500"
                 )} />
               )}
-              {holiday ? holiday.name : noteContent}
+              <div className="flex flex-col gap-0.5">
+                {holiday && <span>{holiday.name}</span>}
+                {hasNote && noteContent && (
+                  <span className={cn(holiday ? "opacity-70 font-medium" : "")}>
+                    {noteContent}
+                  </span>
+                )}
+              </div>
             </div>
             {/* Arrow */}
             <div className="w-2 h-2 bg-zinc-900/90 dark:bg-zinc-100/90 rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2 border-r border-b border-white/10 dark:border-zinc-900/10" />
@@ -165,4 +183,4 @@ export const DayCell: React.FC<DayCellProps> = ({
       <div className="absolute inset-0 bg-zinc-900/0 group-hover:bg-zinc-900/[0.02] dark:group-hover:bg-white/[0.02] transition-colors rounded-2xl" />
     </button>
   );
-};
+});

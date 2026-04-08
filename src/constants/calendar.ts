@@ -38,6 +38,93 @@ export const HOLIDAYS: Holiday[] = [
   { date: '2026-12-25', name: "Christmas Day", type: 'public' },
 ];
 
+export const NOTE_PALETTES: Record<number, { name: string; value: string; class: string }[]> = {
+  0: [ // Jan - Wintry
+    { name: 'Ice', value: '#0ea5e9', class: 'bg-sky-500' },
+    { name: 'Frost', value: '#94a3b8', class: 'bg-slate-400' },
+    { name: 'Deep Sea', value: '#1e40af', class: 'bg-blue-800' },
+    { name: 'Silver', value: '#cbd5e1', class: 'bg-slate-300' },
+    { name: 'Midnight', value: '#0f172a', class: 'bg-slate-900' },
+  ],
+  1: [ // Feb - Romantic
+    { name: 'Rose', value: '#f43f5e', class: 'bg-rose-500' },
+    { name: 'Blush', value: '#fda4af', class: 'bg-rose-300' },
+    { name: 'Wine', value: '#881337', class: 'bg-rose-900' },
+    { name: 'Petal', value: '#fce7f3', class: 'bg-pink-100' },
+    { name: 'Ruby', value: '#be123c', class: 'bg-rose-700' },
+  ],
+  2: [ // Mar - Fresh
+    { name: 'Leaf', value: '#10b981', class: 'bg-emerald-500' },
+    { name: 'Sage', value: '#64748b', class: 'bg-slate-500' },
+    { name: 'Forest', value: '#064e3b', class: 'bg-emerald-900' },
+    { name: 'Mint', value: '#d1fae5', class: 'bg-emerald-100' },
+    { name: 'Moss', value: '#15803d', class: 'bg-green-700' },
+  ],
+  3: [ // Apr - Floral
+    { name: 'Sakura', value: '#f472b6', class: 'bg-pink-400' },
+    { name: 'Tulip', value: '#fb7185', class: 'bg-rose-400' },
+    { name: 'Sky', value: '#7dd3fc', class: 'bg-sky-300' },
+    { name: 'Lavender', value: '#d8b4fe', class: 'bg-purple-300' },
+    { name: 'Orchid', value: '#db2777', class: 'bg-pink-600' },
+  ],
+  4: [ // May - Vibrant
+    { name: 'Grass', value: '#22c55e', class: 'bg-green-500' },
+    { name: 'Sun', value: '#f59e0b', class: 'bg-amber-500' },
+    { name: 'Fern', value: '#166534', class: 'bg-green-800' },
+    { name: 'Meadow', value: '#86efac', class: 'bg-green-300' },
+    { name: 'Earth', value: '#78350f', class: 'bg-amber-900' },
+  ],
+  5: [ // Jun - Summer
+    { name: 'Sand', value: '#fbbf24', class: 'bg-amber-400' },
+    { name: 'Ocean', value: '#0ea5e9', class: 'bg-sky-500' },
+    { name: 'Coral', value: '#fb7185', class: 'bg-rose-400' },
+    { name: 'Palm', value: '#15803d', class: 'bg-green-700' },
+    { name: 'Shell', value: '#fef3c7', class: 'bg-amber-100' },
+  ],
+  6: [ // Jul - Tropical
+    { name: 'Azure', value: '#06b6d4', class: 'bg-cyan-500' },
+    { name: 'Mango', value: '#f97316', class: 'bg-orange-500' },
+    { name: 'Teal', value: '#0d9488', class: 'bg-teal-600' },
+    { name: 'Lagoon', value: '#164e63', class: 'bg-cyan-900' },
+    { name: 'Hibiscus', value: '#e11d48', class: 'bg-rose-600' },
+  ],
+  7: [ // Aug - Sunset
+    { name: 'Flame', value: '#f97316', class: 'bg-orange-500' },
+    { name: 'Gold', value: '#eab308', class: 'bg-yellow-500' },
+    { name: 'Dusk', value: '#4c1d95', class: 'bg-violet-900' },
+    { name: 'Peach', value: '#fdba74', class: 'bg-orange-300' },
+    { name: 'Bronze', value: '#9a3412', class: 'bg-orange-800' },
+  ],
+  8: [ // Sep - Autumn Start
+    { name: 'Pine', value: '#0f766e', class: 'bg-teal-700' },
+    { name: 'Clay', value: '#b45309', class: 'bg-amber-700' },
+    { name: 'Mist', value: '#94a3b8', class: 'bg-slate-400' },
+    { name: 'Olive', value: '#3f6212', class: 'bg-lime-900' },
+    { name: 'Stone', value: '#475569', class: 'bg-slate-600' },
+  ],
+  9: [ // Oct - Harvest
+    { name: 'Pumpkin', value: '#c2410c', class: 'bg-orange-700' },
+    { name: 'Maple', value: '#991b1b', class: 'bg-red-800' },
+    { name: 'Wheat', value: '#fde68a', class: 'bg-amber-200' },
+    { name: 'Bark', value: '#451a03', class: 'bg-orange-950' },
+    { name: 'Cider', value: '#d97706', class: 'bg-amber-600' },
+  ],
+  10: [ // Nov - Moody
+    { name: 'Slate', value: '#4b5563', class: 'bg-zinc-600' },
+    { name: 'Plum', value: '#581c87', class: 'bg-purple-900' },
+    { name: 'Charcoal', value: '#18181b', class: 'bg-zinc-900' },
+    { name: 'Fog', value: '#d4d4d8', class: 'bg-zinc-300' },
+    { name: 'Navy', value: '#1e3a8a', class: 'bg-blue-900' },
+  ],
+  11: [ // Dec - Festive
+    { name: 'Holly', value: '#16a34a', class: 'bg-green-600' },
+    { name: 'Berry', value: '#dc2626', class: 'bg-red-600' },
+    { name: 'Gold', value: '#fbbf24', class: 'bg-amber-400' },
+    { name: 'Night', value: '#312e81', class: 'bg-indigo-900' },
+    { name: 'Snow', value: '#f8fafc', class: 'bg-slate-50' },
+  ],
+};
+
 export const MONTH_THEMES: Record<number, { primary: string; secondary: string; range: string; accent: string; bg: string; text: string; image: string }> = {
   0: { // Jan
     primary: 'bg-blue-600',

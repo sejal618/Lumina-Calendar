@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Note, DateRange } from '../../types/calendar';
 import { format } from 'date-fns';
 import { cn } from '../../lib/utils';
+import { NOTE_PALETTES } from '../../constants/calendar';
 
 interface NotesPanelProps {
   notes: Note[];
@@ -15,7 +16,7 @@ interface NotesPanelProps {
   accentColor: string;
 }
 
-export const NotesPanel: React.FC<NotesPanelProps> = ({
+export const NotesPanel: React.FC<NotesPanelProps> = React.memo(({
   notes,
   range,
   onAddNote,
@@ -25,7 +26,15 @@ export const NotesPanel: React.FC<NotesPanelProps> = ({
   accentColor
 }) => {
   const [newNote, setNewNote] = useState('');
+  const monthIndex = currentDate.getMonth();
   const monthKey = format(currentDate, 'yyyy-MM');
+  const NOTE_COLORS = NOTE_PALETTES[monthIndex] || [];
+  
+  const [selectedColor, setSelectedColor] = useState<string | undefined>(NOTE_COLORS[0]?.value);
+
+  React.useEffect(() => {
+    setSelectedColor(NOTE_COLORS[0]?.value);
+  }, [monthIndex]);
 
   const activeDateKey = range.start && !range.end ? format(range.start, 'yyyy-MM-dd') : null;
   const activeRangeKey = range.start && range.end ? `range-${format(range.start, 'yyyyMMdd')}-${format(range.end, 'yyyyMMdd')}` : null;
@@ -54,8 +63,9 @@ export const NotesPanel: React.FC<NotesPanelProps> = ({
       dateKey = activeDateKey!;
     }
 
-    onAddNote(newNote, type, dateKey, rangeData);
+    onAddNote(newNote, type, dateKey, rangeData, selectedColor);
     setNewNote('');
+    setSelectedColor(NOTE_COLORS[0]?.value);
   };
 
   const renderNoteList = (title: string, noteList: Note[], icon: React.ReactNode) => {
@@ -85,6 +95,7 @@ export const NotesPanel: React.FC<NotesPanelProps> = ({
                     ? "bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 shadow-md scale-[1.02]" 
                     : "bg-zinc-50/50 dark:bg-zinc-900/30 border-transparent opacity-60 hover:opacity-100"
                 )}
+                style={note.color ? { borderLeft: `4px solid ${note.color}` } : undefined}
               >
                 <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed pr-6">
                   {note.content}
@@ -156,6 +167,23 @@ export const NotesPanel: React.FC<NotesPanelProps> = ({
       </div>
 
       <div className="mt-6 space-y-4" data-export-ignore>
+        <div className="flex items-center gap-2 px-1">
+          {NOTE_COLORS.map((color) => (
+            <button
+              key={color.name}
+              onClick={() => setSelectedColor(color.value)}
+              className={cn(
+                "w-6 h-6 rounded-full transition-all border-2",
+                color.class,
+                selectedColor === color.value 
+                  ? "border-zinc-900 dark:border-white scale-110 shadow-md" 
+                  : "border-transparent opacity-60 hover:opacity-100 hover:scale-105"
+              )}
+              title={color.name}
+            />
+          ))}
+        </div>
+
         <div className="relative">
           <textarea
             value={newNote}
@@ -204,4 +232,4 @@ export const NotesPanel: React.FC<NotesPanelProps> = ({
       </div>
     </div>
   );
-};
+});

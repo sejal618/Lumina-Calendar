@@ -1,15 +1,14 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { isSameDay, isWithinInterval, format } from 'date-fns';
-import { ChevronLeft, ChevronRight, Moon, Sun, Download } from 'lucide-react';
+import { isSameDay, isWithinInterval, format, addDays, subDays } from 'date-fns';
 import { toPng } from 'html-to-image';
 import { useCalendar } from '../../hooks/useCalendar';
 import { HeroSection } from './HeroSection';
-import { DayCell } from './DayCell';
 import { NotesPanel } from './NotesPanel';
 import { SpiralBinding } from './SpiralBinding';
-import { MONTH_THEMES, HOLIDAYS } from '../../constants/calendar';
-import { cn } from '../../lib/utils';
+import { CalendarGrid } from './CalendarGrid';
+import { Header } from './Header';
+import { MONTH_THEMES } from '../../constants/calendar';
 import { extractThemeFromImage, DynamicTheme } from '../../services/themeService';
 
 export const Calendar: React.FC = () => {
@@ -39,12 +38,10 @@ export const Calendar: React.FC = () => {
   const [direction, setDirection] = useState(0);
   const calendarRef = useRef<HTMLDivElement>(null);
 
-  const handleDownload = async () => {
+  const handleDownload = useCallback(async () => {
     if (calendarRef.current === null) return;
     
     try {
-      // Temporarily hide elements that shouldn't be in the download if needed
-      // But for now let's just capture the whole thing
       const dataUrl = await toPng(calendarRef.current, {
         cacheBust: true,
         backgroundColor: isDarkMode ? '#09090b' : '#fafafa',
@@ -59,20 +56,20 @@ export const Calendar: React.FC = () => {
     } catch (err) {
       console.error('Failed to download calendar image', err);
     }
-  };
+  }, [currentDate, isDarkMode]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     setDirection(1);
     nextMonth();
-  };
+  }, [nextMonth]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     setDirection(-1);
     prevMonth();
-  };
+  }, [prevMonth]);
 
   // Swipe gesture handler
-  const handleDragEnd = (event: any, info: any) => {
+  const handleDragEnd = useCallback((_event: any, info: any) => {
     const threshold = 100;
     const velocity = info.velocity.x;
     const offset = info.offset.x;
@@ -84,7 +81,8 @@ export const Calendar: React.FC = () => {
         handlePrev();
       }
     }
-  };
+  }, [handleNext, handlePrev]);
+
   const [dynamicTheme, setDynamicTheme] = useState<DynamicTheme | null>(null);
 
   // Keyboard navigation
@@ -92,7 +90,6 @@ export const Calendar: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;
 
-      const { addDays, subDays } = require('date-fns');
       let newDate = focusedDate;
 
       switch (e.key) {
@@ -114,7 +111,7 @@ export const Calendar: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [focusedDate, currentDate]);
+  }, [focusedDate, currentDate, handleDateClick, handleNext, handlePrev, setFocusedDate]);
 
   const theme = MONTH_THEMES[currentDate.getMonth()];
   const currentMonthImage = customImages[currentDate.getMonth()] || theme.image;
@@ -142,15 +139,15 @@ export const Calendar: React.FC = () => {
     } as React.CSSProperties;
   }, [dynamicTheme]);
 
-  const isInRange = (date: Date) => {
+  const isInRange = useCallback((date: Date) => {
     if (range.start && range.end) {
       return isWithinInterval(date, { start: range.start, end: range.end });
     }
     return false;
-  };
+  }, [range]);
 
-  const isRangeStart = (date: Date) => range.start && isSameDay(date, range.start);
-  const isRangeEnd = (date: Date) => range.end && isSameDay(date, range.end);
+  const isRangeStart = useCallback((date: Date) => range.start && isSameDay(date, range.start), [range.start]);
+  const isRangeEnd = useCallback((date: Date) => range.end && isSameDay(date, range.end), [range.end]);
 
   return (
     <div 
@@ -165,49 +162,13 @@ export const Calendar: React.FC = () => {
       >
         <SpiralBinding />
 
-        {/* Static Header Layer - Navigation Arrows only */}
-        <div className="absolute top-0 left-0 right-0 flex flex-col md:flex-row pointer-events-none z-50">
-          <div className="w-full md:w-[40%] lg:w-[35%] h-full" /> {/* Spacer for Hero Section */}
-          <div className="flex-1 p-8 md:p-12 pointer-events-auto">
-            <div className="flex items-center justify-between gap-20">
-              <div className="flex items-center gap-4 flex-shrink-0">
-                <button
-                  onClick={handlePrev}
-                  className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full transition-all text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200/50 dark:border-zinc-700/50 flex-shrink-0"
-                >
-                  <ChevronLeft size={24} />
-                </button>
-                
-                {/* Spacer for the flipping title */}
-                <div className="w-[280px]" />
-
-                <button
-                  onClick={handleNext}
-                  className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full transition-all text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200/50 dark:border-zinc-700/50 flex-shrink-0"
-                >
-                  <ChevronRight size={24} />
-                </button>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleDownload}
-                  title="Download Calendar"
-                  className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl text-zinc-500 dark:text-zinc-400 hover:scale-110 transition-transform border border-zinc-200/50 dark:border-zinc-700/50 flex-shrink-0"
-                >
-                  <Download size={20} />
-                </button>
-
-                <button
-                  onClick={() => setIsDarkMode(!isDarkMode)}
-                  className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl text-zinc-500 dark:text-zinc-400 hover:scale-110 transition-transform border border-zinc-200/50 dark:border-zinc-700/50 flex-shrink-0"
-                >
-                  {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Header 
+          handlePrev={handlePrev}
+          handleNext={handleNext}
+          handleDownload={handleDownload}
+          isDarkMode={isDarkMode}
+          setIsDarkMode={setIsDarkMode}
+        />
 
         <div className="relative" style={{ perspective: 2500 }}>
           <AnimatePresence mode="wait" custom={direction}>
@@ -254,17 +215,14 @@ export const Calendar: React.FC = () => {
               }}
               className="relative flex flex-col md:flex-row min-h-[700px] preserve-3d"
             >
-              {/* Dynamic Shadow Sweep - Simulates light changing as page curves */}
+              {/* Dynamic Shadow Sweep */}
               <motion.div 
                 className="absolute inset-0 z-40 pointer-events-none rounded-[2.5rem]"
                 initial={{ 
                   opacity: 0, 
                   background: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.3) 100%)" 
                 }}
-                animate={{ 
-                  opacity: 0,
-                  transition: { duration: 0.4 }
-                }}
+                animate={{ opacity: 0, transition: { duration: 0.4 } }}
                 exit={{ 
                   opacity: 1, 
                   background: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.6) 100%)",
@@ -272,7 +230,7 @@ export const Calendar: React.FC = () => {
                 }}
               />
               
-              {/* Paper Sheen - Subtle highlight that moves across the page */}
+              {/* Paper Sheen */}
               <motion.div 
                 className="absolute inset-0 z-40 pointer-events-none rounded-[2.5rem]"
                 initial={{ 
@@ -299,69 +257,22 @@ export const Calendar: React.FC = () => {
 
               {/* Right: Calendar & Notes */}
               <div className="flex-1 flex flex-col lg:flex-row">
-                {/* Calendar Grid */}
-                <div className="flex-1 p-8 md:p-12 border-b lg:border-b-0 lg:border-r border-zinc-100 dark:border-zinc-800">
-                  {/* Navigation Header - Grouped < Month Year > */}
-                  <div className="flex items-center justify-between gap-20 mb-12">
-                    <div className="flex items-center gap-4 flex-shrink-0">
-                      {/* Invisible spacers to maintain layout relative to static buttons */}
-                      <div className="w-10 h-10 flex-shrink-0" />
-                      
-                      <div className="w-[280px] text-center">
-                        <h2 className="text-3xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight truncate">
-                          {format(currentDate, 'MMMM yyyy')}
-                        </h2>
-                      </div>
-
-                      <div className="w-10 h-10 flex-shrink-0" />
-                    </div>
-
-                    {/* Invisible spacer for theme toggle */}
-                    <div className="w-10 h-10 flex-shrink-0" />
-                  </div>
-
-                  <div className="grid grid-cols-7 gap-2 mb-6">
-                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                      <div key={day} className="text-center text-[10px] font-black text-zinc-300 dark:text-zinc-700 uppercase tracking-[0.3em] py-2">
-                        {day}
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="grid grid-cols-7 gap-2">
-                    {days.map((day) => {
-                      const dateKey = format(day, 'yyyy-MM-dd');
-                      const holiday = HOLIDAYS.find(h => h.date === dateKey);
-                      const dayNotes = notes.filter(n => n.dateKey === dateKey);
-                      const hasNote = dayNotes.length > 0;
-                      const noteContent = dayNotes[0]?.content;
-
-                      return (
-                        <DayCell
-                          key={day.toISOString()}
-                          date={day}
-                          currentMonth={currentDate}
-                          isSelected={isRangeStart(day) || isRangeEnd(day)}
-                          isInRange={isInRange(day)}
-                          isRangeStart={isRangeStart(day)}
-                          isRangeEnd={isRangeEnd(day)}
-                          holiday={holiday}
-                          hasNote={hasNote}
-                          noteContent={noteContent}
-                          isFocused={isSameDay(day, focusedDate)}
-                          isDragging={isDragging}
-                          onClick={() => handleDateClick(day)}
-                          onFocus={() => setFocusedDate(day)}
-                          onLongPress={() => setRangeStart(day)}
-                          onDragEnter={() => updateRangeEnd(day)}
-                          onDragEnd={endDragging}
-                          accentColor="bg-[var(--primary)]"
-                          rangeColor="bg-[var(--range-bg)]"
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
+                <CalendarGrid 
+                  days={days}
+                  currentDate={currentDate}
+                  range={range}
+                  notes={notes}
+                  focusedDate={focusedDate}
+                  isDragging={isDragging}
+                  handleDateClick={handleDateClick}
+                  setFocusedDate={setFocusedDate}
+                  setRangeStart={setRangeStart}
+                  updateRangeEnd={updateRangeEnd}
+                  endDragging={endDragging}
+                  isInRange={isInRange}
+                  isRangeStart={isRangeStart}
+                  isRangeEnd={isRangeEnd}
+                />
 
                 <div className="w-full lg:w-[320px] xl:w-[380px] p-8 md:p-12 bg-zinc-50/50 dark:bg-zinc-900/50 backdrop-blur-sm rounded-br-[2.5rem]">
                   <NotesPanel
@@ -384,12 +295,12 @@ export const Calendar: React.FC = () => {
       <div className="max-w-7xl mx-auto mt-12 flex flex-col md:flex-row items-center justify-between gap-8 px-4 opacity-40 hover:opacity-100 transition-opacity">
         <div className="flex items-center gap-8">
           <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-600 mb-2">Edition</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-600 mb-2">Edition</span>
             <span className="text-sm font-serif italic text-zinc-500 dark:text-zinc-400">Lumina Professional</span>
           </div>
           <div className="w-px h-8 bg-zinc-200 dark:bg-zinc-800" />
           <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-600 mb-2">Status</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-600 mb-2">Status</span>
             <span className="text-sm font-medium text-zinc-400 flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Synced to Local

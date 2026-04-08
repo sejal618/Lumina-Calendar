@@ -4,6 +4,7 @@ export interface Note {
   content: string;
   type: 'day' | 'range' | 'month';
   range?: { start: string; end: string };
+  color?: string;
 }
 
 export interface DateRange {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
 
-export const SpiralBinding: React.FC = () => {
+export const SpiralBinding: React.FC = React.memo(() => {
   return (
     <div className="absolute -top-4 left-0 right-0 flex justify-around px-4 md:px-8 z-20 pointer-events-none">
       {Array.from({ length: 12 }).map((_, i) => (
@@ -14,4 +14,4 @@ export const SpiralBinding: React.FC = () => {
       ))}
     </div>
   );
-};
+});

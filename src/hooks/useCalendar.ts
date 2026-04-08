@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { 
   addMonths, 
   subMonths, 
@@ -7,15 +7,12 @@ import {
   startOfWeek, 
   endOfWeek, 
   eachDayOfInterval, 
-  format,
-  isSameDay,
   isBefore,
-  startOfToday
 } from 'date-fns';
 import { DateRange, Note } from '../types/calendar';
 
 export function useCalendar() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(() => new Date());
   const [range, setRange] = useState<DateRange>({ start: null, end: null });
   const [notes, setNotes] = useState<Note[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -24,7 +21,7 @@ export function useCalendar() {
     }
     return false;
   });
-  const [focusedDate, setFocusedDate] = useState<Date>(new Date());
+  const [focusedDate, setFocusedDate] = useState<Date>(() => new Date());
   const [customImages, setCustomImages] = useState<Record<number, string>>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('calendar-custom-images');
@@ -33,26 +30,26 @@ export function useCalendar() {
     return {};
   });
 
-  // Persistence
+  // Initial load
   useEffect(() => {
     const savedNotes = localStorage.getItem('calendar-notes');
-    if (savedNotes) setNotes(JSON.parse(savedNotes));
-    
-    const savedTheme = localStorage.getItem('calendar-theme');
-    if (savedTheme) setIsDarkMode(savedTheme === 'dark');
+    if (savedNotes) {
+      try {
+        setNotes(JSON.parse(savedNotes));
+      } catch (e) {
+        console.error('Failed to parse saved notes', e);
+      }
+    }
   }, []);
 
+  // Persistence
   useEffect(() => {
     localStorage.setItem('calendar-notes', JSON.stringify(notes));
   }, [notes]);
 
   useEffect(() => {
     localStorage.setItem('calendar-theme', isDarkMode ? 'dark' : 'light');
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    document.documentElement.classList.toggle('dark', isDarkMode);
   }, [isDarkMode]);
 
   useEffect(() => {
@@ -65,68 +62,82 @@ export function useCalendar() {
     return eachDayOfInterval({ start, end });
   }, [currentDate]);
 
-  const nextMonth = () => {
-    const next = addMonths(currentDate, 1);
-    setCurrentDate(next);
-    setFocusedDate(startOfMonth(next));
-  };
-  const prevMonth = () => {
-    const prev = subMonths(currentDate, 1);
-    setCurrentDate(prev);
-    setFocusedDate(startOfMonth(prev));
-  };
+  const nextMonth = useCallback(() => {
+    setCurrentDate(prev => {
+      const next = addMonths(prev, 1);
+      setFocusedDate(startOfMonth(next));
+      return next;
+    });
+  }, []);
+
+  const prevMonth = useCallback(() => {
+    setCurrentDate(prev => {
+      const prevM = subMonths(prev, 1);
+      setFocusedDate(startOfMonth(prevM));
+      return prevM;
+    });
+  }, []);
 
   const [isDragging, setIsDragging] = useState(false);
 
-  const handleDateClick = (date: Date) => {
-    if (!range.start || (range.start && range.end)) {
-      setRange({ start: date, end: null });
-    } else {
-      if (isBefore(date, range.start)) {
-        setRange({ start: date, end: range.start });
+  const handleDateClick = useCallback((date: Date) => {
+    setRange(prev => {
+      if (!prev.start || (prev.start && prev.end)) {
+        return { start: date, end: null };
       } else {
-        setRange({ start: range.start, end: date });
+        if (isBefore(date, prev.start)) {
+          return { start: date, end: prev.start };
+        } else {
+          return { start: prev.start, end: date };
+        }
       }
-    }
-  };
+    });
+  }, []);
 
-  const setRangeStart = (date: Date) => {
+  const setRangeStart = useCallback((date: Date) => {
     setRange({ start: date, end: null });
     setIsDragging(true);
-  };
+  }, []);
 
-  const updateRangeEnd = (date: Date) => {
-    if (isDragging && range.start) {
-      if (isBefore(date, range.start)) {
-        setRange({ start: date, end: range.start });
-      } else {
-        setRange({ start: range.start, end: date });
+  const updateRangeEnd = useCallback((date: Date) => {
+    setIsDragging(dragging => {
+      if (dragging) {
+        setRange(prev => {
+          if (!prev.start) return prev;
+          if (isBefore(date, prev.start)) {
+            return { start: date, end: prev.start };
+          } else {
+            return { start: prev.start, end: date };
+          }
+        });
       }
-    }
-  };
+      return dragging;
+    });
+  }, []);
 
-  const endDragging = () => {
+  const endDragging = useCallback(() => {
     setIsDragging(false);
-  };
+  }, []);
 
-  const addNote = (content: string, type: Note['type'], dateKey: string, rangeData?: Note['range']) => {
+  const addNote = useCallback((content: string, type: Note['type'], dateKey: string, rangeData?: Note['range'], color?: string) => {
     const newNote: Note = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).substring(2, 11),
       dateKey,
       content,
       type,
-      range: rangeData
+      range: rangeData,
+      color
     };
     setNotes(prev => [...prev, newNote]);
-  };
+  }, []);
 
-  const deleteNote = (id: string) => {
+  const deleteNote = useCallback((id: string) => {
     setNotes(prev => prev.filter(n => n.id !== id));
-  };
+  }, []);
 
-  const setCustomImage = (month: number, imageUrl: string) => {
+  const setCustomImage = useCallback((month: number, imageUrl: string) => {
     setCustomImages(prev => ({ ...prev, [month]: imageUrl }));
-  };
+  }, []);
 
   return {
     currentDate,

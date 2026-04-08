@@ -11,7 +11,7 @@ interface HeroSectionProps {
   onImageChange: (url: string) => void;
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ 
+export const HeroSection: React.FC<HeroSectionProps> = React.memo(({ 
   currentDate, 
   customImage, 
   onImageChange
@@ -98,4 +98,4 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       </div>
     </div>
   );
-};
+});
