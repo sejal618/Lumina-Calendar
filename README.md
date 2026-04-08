@@ -7,11 +7,13 @@ I built this production-level, visually stunning, and highly interactive Wall Ca
 - **Wall Calendar Aesthetic**: I designed the UI to mimic a physical calendar, complete with custom spiral binding, dynamic hero imagery, and paper-like textures.
 - **Dynamic Theming**: I created a system where the UI theme (colors, accents, imagery) automatically adapts based on the current month to reflect the season.
 - **Interactive Range Selection**: I implemented a robust date range selector with smooth visual feedback and comprehensive edge-case handling.
-- **Integrated Notes System**: 
-  - **Monthly Memos**: For high-level planning.
-  - **Range-specific Notes**: For detailed scheduling during selected periods.
-  - **Day-specific Notes**: For quick daily reminders.
-- **Persistence**: I used `localStorage` to ensure all notes and theme preferences are saved between sessions.
+- **Color-Coded Notes**: I implemented a dynamic color palette system for notes. Each month features a unique, curated set of 5 colors that harmonize with the month's hero image (e.g., wintry blues for January, harvest oranges for October).
+- **Differentiated Markers**: I designed unique visual signatures for different types of information:
+  - **Holidays**: Represented by a **diamond** marker in the top-right, with distinct colors for public holidays (Indigo) and festivals (Cyan).
+  - **Notes**: Represented by a **circular** marker at the bottom, using the user's selected category color.
+- **Enhanced Tooltips**: I improved the hover feedback to display both holiday and note content simultaneously, ensuring no data is hidden.
+- **Download Functionality**: I integrated `html-to-image` to allow users to capture and download their customized calendar as a high-quality PNG.
+- **Persistence**: I used `localStorage` to ensure all notes, selected colors, and theme preferences are saved between sessions.
 - **Responsive Design**: I engineered a flawless transition from a sophisticated side-by-side desktop layout to a clean, functional mobile view.
 - **Advanced UX Details**:
   - **3D Page Flip**: Realistic paper-flipping animations with depth and shadow transitions using Framer Motion.
@@ -71,12 +73,10 @@ src/
 - **Animations & Gestures**: I used `AnimatePresence` and `@use-gesture/react` to create a tactile experience. The 3D flip responds to swipe velocity, and long-pressing a date triggers a haptic pulse before entering "drag-to-select" mode.
 - **Theme Extraction**: I implemented a `themeService` that uses `chroma-js` to extract dominant colors from the month's hero image, dynamically generating a cohesive palette (primary, range background, and high-contrast foregrounds) for every month.
 
-## 🚀 Deployment (Vercel)
+## 🚀 Deployment & Export
 
-1. Push the code to GitHub.
-2. Go to [Vercel](https://vercel.com) and import the repository.
-3. Vercel will automatically detect the framework and deploy.
-4. Ensure `NODE_VERSION` is set to 18 or higher if needed.
+1. **GitHub Export**: You can easily export this project to your own GitHub repository. Click on the **Settings** menu in the AI Studio interface and select **Export to GitHub**. This will create a public repository with the full source code.
+2. **Vercel Deployment**: Once exported to GitHub, go to [Vercel](https://vercel.com) and import the repository. Vercel will automatically detect the Vite framework and deploy. Ensure `NODE_VERSION` is set to 18 or higher.
 
 ## 🎥 My Demo Script
 
