@@ -23,6 +23,10 @@ export const Calendar: React.FC = () => {
     nextMonth,
     prevMonth,
     handleDateClick,
+    setRangeStart,
+    updateRangeEnd,
+    endDragging,
+    isDragging,
     addNote,
     deleteNote,
     setIsDarkMode,
@@ -30,6 +34,31 @@ export const Calendar: React.FC = () => {
   } = useCalendar();
 
   const [direction, setDirection] = useState(0);
+
+  const handleNext = () => {
+    setDirection(1);
+    nextMonth();
+  };
+
+  const handlePrev = () => {
+    setDirection(-1);
+    prevMonth();
+  };
+
+  // Swipe gesture handler
+  const handleDragEnd = (event: any, info: any) => {
+    const threshold = 100;
+    const velocity = info.velocity.x;
+    const offset = info.offset.x;
+
+    if (Math.abs(offset) > threshold || Math.abs(velocity) > 500) {
+      if (offset < 0) {
+        handleNext();
+      } else {
+        handlePrev();
+      }
+    }
+  };
   const [dynamicTheme, setDynamicTheme] = useState<DynamicTheme | null>(null);
 
   // Keyboard navigation
@@ -79,20 +108,12 @@ export const Calendar: React.FC = () => {
       '--primary': dynamicTheme.primary,
       '--primary-dark': dynamicTheme.primaryDark,
       '--primary-light': dynamicTheme.primaryLight,
+      '--primary-foreground': dynamicTheme.primaryForeground,
       '--range-bg': dynamicTheme.rangeBg,
+      '--range-text': dynamicTheme.rangeText,
       '--accent': dynamicTheme.accent,
     } as React.CSSProperties;
   }, [dynamicTheme]);
-
-  const handleNext = () => {
-    setDirection(1);
-    nextMonth();
-  };
-
-  const handlePrev = () => {
-    setDirection(-1);
-    prevMonth();
-  };
 
   const isInRange = (date: Date) => {
     if (range.start && range.end) {
@@ -120,21 +141,21 @@ export const Calendar: React.FC = () => {
         <div className="absolute top-0 left-0 right-0 flex flex-col md:flex-row pointer-events-none z-50">
           <div className="w-full md:w-[40%] lg:w-[35%] h-full" /> {/* Spacer for Hero Section */}
           <div className="flex-1 p-8 md:p-12 pointer-events-auto">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-20">
+              <div className="flex items-center gap-4 flex-shrink-0">
                 <button
                   onClick={handlePrev}
-                  className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full transition-all text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200/50 dark:border-zinc-700/50"
+                  className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full transition-all text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200/50 dark:border-zinc-700/50 flex-shrink-0"
                 >
                   <ChevronLeft size={24} />
                 </button>
                 
                 {/* Spacer for the flipping title */}
-                <div className="min-w-[200px]" />
+                <div className="w-[280px]" />
 
                 <button
                   onClick={handleNext}
-                  className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full transition-all text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200/50 dark:border-zinc-700/50"
+                  className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full transition-all text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200/50 dark:border-zinc-700/50 flex-shrink-0"
                 >
                   <ChevronRight size={24} />
                 </button>
@@ -142,7 +163,7 @@ export const Calendar: React.FC = () => {
 
               <button
                 onClick={() => setIsDarkMode(!isDarkMode)}
-                className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl text-zinc-500 dark:text-zinc-400 hover:scale-110 transition-transform border border-zinc-200/50 dark:border-zinc-700/50"
+                className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl text-zinc-500 dark:text-zinc-400 hover:scale-110 transition-transform border border-zinc-200/50 dark:border-zinc-700/50 flex-shrink-0"
               >
                 {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
               </button>
@@ -155,6 +176,10 @@ export const Calendar: React.FC = () => {
             <motion.div
               key={currentDate.toISOString()}
               custom={direction}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={handleDragEnd}
               initial={{ 
                 rotateX: direction > 0 ? 110 : -110,
                 rotateY: direction > 0 ? -2 : 2,
@@ -235,22 +260,22 @@ export const Calendar: React.FC = () => {
                 {/* Calendar Grid */}
                 <div className="flex-1 p-8 md:p-12 border-b lg:border-b-0 lg:border-r border-zinc-100 dark:border-zinc-800">
                   {/* Navigation Header - Grouped < Month Year > */}
-                  <div className="flex items-center justify-between mb-12">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between gap-20 mb-12">
+                    <div className="flex items-center gap-4 flex-shrink-0">
                       {/* Invisible spacers to maintain layout relative to static buttons */}
-                      <div className="w-10 h-10" />
+                      <div className="w-10 h-10 flex-shrink-0" />
                       
-                      <div className="min-w-[200px] text-center">
-                        <h2 className="text-3xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight">
+                      <div className="w-[280px] text-center">
+                        <h2 className="text-3xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight truncate">
                           {format(currentDate, 'MMMM yyyy')}
                         </h2>
                       </div>
 
-                      <div className="w-10 h-10" />
+                      <div className="w-10 h-10 flex-shrink-0" />
                     </div>
 
                     {/* Invisible spacer for theme toggle */}
-                    <div className="w-10 h-10" />
+                    <div className="w-10 h-10 flex-shrink-0" />
                   </div>
 
                   <div className="grid grid-cols-7 gap-2 mb-6">
@@ -282,8 +307,12 @@ export const Calendar: React.FC = () => {
                           hasNote={hasNote}
                           noteContent={noteContent}
                           isFocused={isSameDay(day, focusedDate)}
+                          isDragging={isDragging}
                           onClick={() => handleDateClick(day)}
                           onFocus={() => setFocusedDate(day)}
+                          onLongPress={() => setRangeStart(day)}
+                          onDragEnter={() => updateRangeEnd(day)}
+                          onDragEnd={endDragging}
                           accentColor="bg-[var(--primary)]"
                           rangeColor="bg-[var(--range-bg)]"
                         />

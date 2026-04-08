@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { format, isSameMonth, isSameDay, isBefore, startOfToday } from 'date-fns';
+import { useGesture } from '@use-gesture/react';
 import { cn } from '../../lib/utils';
 import { Holiday } from '../../types/calendar';
 
@@ -14,8 +15,12 @@ interface DayCellProps {
   hasNote: boolean;
   noteContent?: string;
   isFocused: boolean;
+  isDragging: boolean;
   onClick: () => void;
   onFocus: () => void;
+  onLongPress: () => void;
+  onDragEnter: () => void;
+  onDragEnd: () => void;
   accentColor: string;
   rangeColor: string;
 }
@@ -31,29 +36,65 @@ export const DayCell: React.FC<DayCellProps> = ({
   hasNote,
   noteContent,
   isFocused,
+  isDragging,
   onClick,
   onFocus,
+  onLongPress,
+  onDragEnter,
+  onDragEnd,
   accentColor,
   rangeColor
 }) => {
   const isCurrentMonth = isSameMonth(date, currentMonth);
   const isToday = isSameDay(date, new Date());
   const isPast = isBefore(date, startOfToday());
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  const bind = useGesture(
+    {
+      onDrag: ({ active, first, last, movement: [mx], direction: [dx], velocity: [vx] }) => {
+        if (first) {
+          if (window.navigator.vibrate) {
+            window.navigator.vibrate(50);
+          }
+          onLongPress();
+        }
+        if (last) {
+          onDragEnd();
+        }
+      },
+      onPointerEnter: () => {
+        if (isDragging) {
+          onDragEnter();
+        }
+      },
+    },
+    {
+      drag: { 
+        delay: 500, // Long press threshold
+        triggerAllEvents: true,
+        threshold: 10
+      }
+    }
+  );
 
   return (
     <button
+      ref={buttonRef}
       onClick={onClick}
       onFocus={onFocus}
+      {...bind()}
       disabled={!isCurrentMonth}
       className={cn(
-        "relative aspect-square flex flex-col items-center justify-center text-sm transition-all duration-300 rounded-2xl group overflow-hidden",
+        "relative aspect-square flex flex-col items-center justify-center text-sm transition-all duration-300 rounded-2xl group overflow-hidden touch-pan-y",
         !isCurrentMonth && "text-zinc-300 dark:text-zinc-700 opacity-0 pointer-events-none",
         isCurrentMonth && "text-zinc-600 dark:text-zinc-400 hover:bg-[var(--primary-light)] dark:hover:bg-[var(--primary-dark)]/20",
         isPast && isCurrentMonth && !isSelected && !isInRange && "opacity-40 grayscale-[0.5]",
         isInRange && !isSelected && isCurrentMonth && "bg-[var(--range-bg)] text-zinc-900 dark:text-zinc-100",
-        isSelected && "bg-[var(--primary)] text-white shadow-xl z-10 scale-105",
+        isSelected && "bg-[var(--primary)] text-[var(--range-text)] shadow-xl z-10 scale-105",
         isToday && !isSelected && "ring-2 ring-inset ring-zinc-200 dark:ring-zinc-700 font-bold",
-        isFocused && !isSelected && "ring-2 ring-zinc-400 dark:ring-zinc-500 ring-offset-2 dark:ring-offset-zinc-900"
+        isFocused && !isSelected && "ring-2 ring-zinc-400 dark:ring-zinc-500 ring-offset-2 dark:ring-offset-zinc-900",
+        isDragging && isCurrentMonth && "cursor-crosshair"
       )}
     >
       <span className={cn(

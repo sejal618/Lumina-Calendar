@@ -65,6 +65,8 @@ export function useCalendar() {
     setFocusedDate(startOfMonth(prev));
   };
 
+  const [isDragging, setIsDragging] = useState(false);
+
   const handleDateClick = (date: Date) => {
     if (!range.start || (range.start && range.end)) {
       setRange({ start: date, end: null });
@@ -75,6 +77,25 @@ export function useCalendar() {
         setRange({ start: range.start, end: date });
       }
     }
+  };
+
+  const setRangeStart = (date: Date) => {
+    setRange({ start: date, end: null });
+    setIsDragging(true);
+  };
+
+  const updateRangeEnd = (date: Date) => {
+    if (isDragging && range.start) {
+      if (isBefore(date, range.start)) {
+        setRange({ start: date, end: range.start });
+      } else {
+        setRange({ start: range.start, end: date });
+      }
+    }
+  };
+
+  const endDragging = () => {
+    setIsDragging(false);
   };
 
   const addNote = (content: string, type: Note['type'], dateKey: string, rangeData?: Note['range']) => {
@@ -99,10 +120,14 @@ export function useCalendar() {
     notes,
     isDarkMode,
     focusedDate,
+    isDragging,
     setFocusedDate,
     nextMonth,
     prevMonth,
     handleDateClick,
+    setRangeStart,
+    updateRangeEnd,
+    endDragging,
     addNote,
     deleteNote,
     setIsDarkMode,

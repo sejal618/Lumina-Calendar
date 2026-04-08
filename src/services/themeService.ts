@@ -4,7 +4,9 @@ export interface DynamicTheme {
   primary: string;
   primaryDark: string;
   primaryLight: string;
+  primaryForeground: string;
   rangeBg: string;
+  rangeText: string;
   accent: string;
 }
 
@@ -12,7 +14,9 @@ const FALLBACK_THEME: DynamicTheme = {
   primary: '#71717a', // zinc-500
   primaryDark: '#3f3f46', // zinc-700
   primaryLight: '#f4f4f5', // zinc-100
+  primaryForeground: '#ffffff',
   rangeBg: 'rgba(244, 244, 245, 0.15)',
+  rangeText: '#71717a',
   accent: '#a1a1aa', // zinc-400
 };
 
@@ -42,11 +46,21 @@ const generateTheme = (rgb: [number, number, number]): DynamicTheme => {
   // Accent: A slightly different tone for small details
   const accent = primaryColor.set('hsl.h', '+30').hex();
 
+  // Range Text: A solid version of the range background to use for the "stencil" effect
+  // We desaturate and adjust luminance to match the visual "weight" of the range background
+  const rangeText = primaryColor.desaturate(1.2).darken(2.5).hex();
+
+  // Primary Foreground: We use a very dark, desaturated version of the primary color
+  // to match the "soft" aesthetic of the range background.
+  const primaryForeground = primaryColor.desaturate(1.2).darken(3).hex();
+
   return {
     primary,
     primaryDark,
     primaryLight,
+    primaryForeground,
     rangeBg,
+    rangeText,
     accent,
   };
 };
