@@ -67,21 +67,26 @@ export const DayCell: React.FC<DayCellProps> = React.memo(({
           onDragEnd();
         }
       },
-      onPointerEnter: () => {
+      onPointerEnter: ({ event }) => {
         if (isDragging) {
           onDragEnter();
         }
-        setShowTooltip(true);
+        // Only show on hover for mouse
+        if ((event as PointerEvent).pointerType === 'mouse') {
+          setShowTooltip(true);
+        }
       },
-      onPointerLeave: () => {
-        setShowTooltip(false);
+      onPointerLeave: ({ event }) => {
+        if ((event as PointerEvent).pointerType === 'mouse') {
+          setShowTooltip(false);
+        }
       },
       onClick: () => {
         if (!isDragging) {
           onClick();
-          // Toggle tooltip on mobile tap if it has content
+          // Toggle tooltip on click (works for both mobile tap and desktop click)
           if (holiday || (hasNote && noteContent)) {
-            setShowTooltip(!showTooltip);
+            setShowTooltip(prev => !prev);
           }
         }
       }
