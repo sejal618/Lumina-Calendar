@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { StickyNote, Trash2, Plus, X, Calendar as CalendarIcon, Palette } from 'lucide-react';
+import { StickyNote, Trash2, Plus, X, Calendar as CalendarIcon, Palette, Edit2, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Note, DateRange } from '../../types/calendar';
 import { format } from 'date-fns';
@@ -9,8 +9,9 @@ import { NOTE_PALETTES } from '../../constants/calendar';
 interface NotesPanelProps {
   notes: Note[];
   range: DateRange;
-  onAddNote: (content: string, type: Note['type'], dateKey: string, range?: Note['range']) => void;
+  onAddNote: (content: string, type: Note['type'], dateKey: string, range?: Note['range'], color?: string) => void;
   onDeleteNote: (id: string) => void;
+  onUpdateNote: (id: string, content: string, color?: string) => void;
   onClearRange: () => void;
   currentDate: Date;
   accentColor: string;
@@ -21,11 +22,13 @@ export const NotesPanel: React.FC<NotesPanelProps> = React.memo(({
   range,
   onAddNote,
   onDeleteNote,
+  onUpdateNote,
   onClearRange,
   currentDate,
   accentColor
 }) => {
   const [newNote, setNewNote] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
   const monthIndex = currentDate.getMonth();
   const monthKey = format(currentDate, 'yyyy-MM');
   const NOTE_COLORS = NOTE_PALETTES[monthIndex] || [];
@@ -34,8 +37,10 @@ export const NotesPanel: React.FC<NotesPanelProps> = React.memo(({
   const colorInputRef = useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
-    setSelectedColor(NOTE_COLORS[0]?.value);
-  }, [monthIndex]);
+    if (!editingId) {
+      setSelectedColor(NOTE_COLORS[0]?.value);
+    }
+  }, [monthIndex, editingId]);
 
   const activeDateKey = range.start && !range.end ? format(range.start, 'yyyy-MM-dd') : null;
   const activeRangeKey = range.start && range.end ? `range-${format(range.start, 'yyyyMMdd')}-${format(range.end, 'yyyyMMdd')}` : null;
@@ -51,20 +56,38 @@ export const NotesPanel: React.FC<NotesPanelProps> = React.memo(({
   const handleAdd = () => {
     if (!newNote.trim()) return;
     
-    let type: Note['type'] = 'month';
-    let dateKey = monthKey;
-    let rangeData: Note['range'] | undefined;
+    if (editingId) {
+      onUpdateNote(editingId, newNote, selectedColor);
+      setEditingId(null);
+    } else {
+      let type: Note['type'] = 'month';
+      let dateKey = monthKey;
+      let rangeData: Note['range'] | undefined;
 
-    if (range.start && range.end) {
-      type = 'range';
-      dateKey = activeRangeKey!;
-      rangeData = { start: format(range.start, 'yyyy-MM-dd'), end: format(range.end, 'yyyy-MM-dd') };
-    } else if (range.start) {
-      type = 'day';
-      dateKey = activeDateKey!;
+      if (range.start && range.end) {
+        type = 'range';
+        dateKey = activeRangeKey!;
+        rangeData = { start: format(range.start, 'yyyy-MM-dd'), end: format(range.end, 'yyyy-MM-dd') };
+      } else if (range.start) {
+        type = 'day';
+        dateKey = activeDateKey!;
+      }
+
+      onAddNote(newNote, type, dateKey, rangeData, selectedColor);
     }
+    
+    setNewNote('');
+    setSelectedColor(NOTE_COLORS[0]?.value);
+  };
 
-    onAddNote(newNote, type, dateKey, rangeData, selectedColor);
+  const startEditing = (note: Note) => {
+    setEditingId(note.id);
+    setNewNote(note.content);
+    setSelectedColor(note.color);
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
     setNewNote('');
     setSelectedColor(NOTE_COLORS[0]?.value);
   };
@@ -84,6 +107,7 @@ export const NotesPanel: React.FC<NotesPanelProps> = React.memo(({
             const isActive = (note.type === 'day' && note.dateKey === activeDateKey) || 
                            (note.type === 'range' && note.dateKey === activeRangeKey) ||
                            (note.type === 'month' && !range.start);
+            const isEditing = editingId === note.id;
 
             return (
               <motion.div
@@ -92,13 +116,16 @@ export const NotesPanel: React.FC<NotesPanelProps> = React.memo(({
                 animate={{ opacity: 1, y: 0 }}
                 className={cn(
                   "group relative p-4 rounded-2xl border transition-all duration-300",
-                  isActive 
+                  isActive || isEditing
                     ? "bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 shadow-md scale-[1.02]" 
                     : "bg-zinc-50/50 dark:bg-zinc-900/30 border-transparent opacity-60 hover:opacity-100"
                 )}
                 style={note.color ? { borderLeft: `4px solid ${note.color}` } : undefined}
               >
-                <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed pr-6">
+                <p className={cn(
+                  "text-sm leading-relaxed pr-12",
+                  isEditing ? "text-[var(--primary)] font-medium" : "text-zinc-600 dark:text-zinc-300"
+                )}>
                   {note.content}
                 </p>
                 {note.type === 'range' && note.range && (
@@ -111,13 +138,22 @@ export const NotesPanel: React.FC<NotesPanelProps> = React.memo(({
                     {format(new Date(note.dateKey), 'MMMM d')}
                   </p>
                 )}
-                <button
-                  onClick={() => onDeleteNote(note.id)}
-                  data-export-ignore
-                  className="absolute top-4 right-4 text-zinc-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                >
-                  <Trash2 size={14} />
-                </button>
+                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all" data-export-ignore>
+                  {!isEditing && (
+                    <button
+                      onClick={() => startEditing(note)}
+                      className="text-zinc-300 hover:text-zinc-600 dark:hover:text-zinc-100"
+                    >
+                      <Edit2 size={14} />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => onDeleteNote(note.id)}
+                    className="text-zinc-300 hover:text-red-500"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </motion.div>
             );
           })}
@@ -168,8 +204,9 @@ export const NotesPanel: React.FC<NotesPanelProps> = React.memo(({
       </div>
 
       <div className="mt-6 space-y-4" data-export-ignore>
-        <div className="flex items-center gap-2 px-1">
-          {NOTE_COLORS.map((color) => (
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            {NOTE_COLORS.map((color) => (
             <button
               key={color.name}
               onClick={() => setSelectedColor(color.value)}
@@ -209,33 +246,46 @@ export const NotesPanel: React.FC<NotesPanelProps> = React.memo(({
           </button>
         </div>
 
-        <div className="relative">
-          <textarea
-            value={newNote}
-            onChange={(e) => setNewNote(e.target.value)}
-            placeholder={range.start ? (range.end ? "Add note for range..." : "Add note for day...") : "Add monthly memo..."}
-            className="w-full p-5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-[2rem] text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-4 focus:ring-zinc-100 dark:focus:ring-zinc-800/50 transition-all resize-none min-h-[120px] shadow-sm"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleAdd();
-              }
-            }}
-          />
-          <button
-            onClick={handleAdd}
-            disabled={!newNote.trim()}
-            className={cn(
-              "absolute bottom-4 right-4 p-3 rounded-2xl text-white transition-all shadow-xl active:scale-95",
-              accentColor,
-              !newNote.trim() && "opacity-50 cursor-not-allowed grayscale"
-            )}
+        {editingId && (
+          <button 
+            onClick={cancelEditing}
+            className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
           >
-            <Plus size={20} />
+            Cancel Edit
           </button>
-        </div>
-        
-        {range.start && (
+        )}
+      </div>
+
+      <div className="relative">
+        <textarea
+          value={newNote}
+          onChange={(e) => setNewNote(e.target.value)}
+          placeholder={editingId ? "Edit note..." : (range.start ? (range.end ? "Add note for range..." : "Add note for day...") : "Add monthly memo...")}
+          className={cn(
+            "w-full p-5 bg-white dark:bg-zinc-800 border rounded-[2rem] text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-4 transition-all resize-none min-h-[120px] shadow-sm",
+            editingId ? "border-[var(--primary)] focus:ring-[var(--primary)]/20" : "border-zinc-200 dark:border-zinc-700 focus:ring-zinc-100 dark:focus:ring-zinc-800/50"
+          )}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleAdd();
+            }
+          }}
+        />
+        <button
+          onClick={handleAdd}
+          disabled={!newNote.trim()}
+          className={cn(
+            "absolute bottom-4 right-4 p-3 rounded-2xl text-white transition-all shadow-xl active:scale-95",
+            accentColor,
+            !newNote.trim() && "opacity-50 cursor-not-allowed grayscale"
+          )}
+        >
+          {editingId ? <Check size={20} /> : <Plus size={20} />}
+        </button>
+      </div>
+      
+      {range.start && !editingId && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

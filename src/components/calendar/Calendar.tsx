@@ -32,6 +32,7 @@ export const Calendar: React.FC = () => {
     endDragging,
     addNote,
     deleteNote,
+    updateNote,
     setIsDarkMode,
     setRange,
     setCustomImage
@@ -286,6 +287,7 @@ export const Calendar: React.FC = () => {
                       range={range}
                       onAddNote={addNote}
                       onDeleteNote={deleteNote}
+                      onUpdateNote={updateNote}
                       onClearRange={() => setRange({ start: null, end: null })}
                       currentDate={currentDate}
                       accentColor="bg-[var(--primary)]"

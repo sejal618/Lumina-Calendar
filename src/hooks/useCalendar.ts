@@ -143,6 +143,10 @@ export function useCalendar() {
     setNotes(prev => prev.filter(n => n.id !== id));
   }, []);
 
+  const updateNote = useCallback((id: string, content: string, color?: string) => {
+    setNotes(prev => prev.map(n => n.id === id ? { ...n, content, color } : n));
+  }, []);
+
   const setCustomImage = useCallback((month: number, imageUrl: string) => {
     setCustomImages(prev => ({ ...prev, [month]: imageUrl }));
   }, []);
@@ -166,6 +170,7 @@ export function useCalendar() {
     endDragging,
     addNote,
     deleteNote,
+    updateNote,
     setIsDarkMode,
     setRange,
     setCustomImage
