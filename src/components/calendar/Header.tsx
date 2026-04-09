@@ -1,7 +1,9 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, Download, Sun, Moon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Sun, Moon, LayoutGrid, Calendar as CalendarIcon } from 'lucide-react';
 
 interface HeaderProps {
+  view: 'month' | 'year';
+  setView: (view: 'month' | 'year') => void;
   handlePrev: () => void;
   handleNext: () => void;
   handleDownload: () => void;
@@ -10,6 +12,8 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
+  view,
+  setView,
   handlePrev,
   handleNext,
   handleDownload,
@@ -23,25 +27,39 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex-1 p-8 md:p-12 pointer-events-auto">
           <div className="flex items-center justify-between gap-4 md:gap-8 lg:gap-12">
             <div className="flex items-center gap-4 flex-shrink-0">
-              <button
-                onClick={handlePrev}
-                className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full transition-all text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200/50 dark:border-zinc-700/50 flex-shrink-0"
-              >
-                <ChevronLeft size={24} />
-              </button>
-              
-              {/* Spacer for the flipping title */}
-              <div className="w-[200px] md:w-[280px]" />
+              {view === 'month' ? (
+                <>
+                  <button
+                    onClick={handlePrev}
+                    className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full transition-all text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200/50 dark:border-zinc-700/50 flex-shrink-0"
+                  >
+                    <ChevronLeft size={24} />
+                  </button>
+                  
+                  {/* Spacer for the flipping title */}
+                  <div className="w-[200px] md:w-[280px]" />
 
-              <button
-                onClick={handleNext}
-                className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full transition-all text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200/50 dark:border-zinc-700/50 flex-shrink-0"
-              >
-                <ChevronRight size={24} />
-              </button>
+                  <button
+                    onClick={handleNext}
+                    className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full transition-all text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200/50 dark:border-zinc-700/50 flex-shrink-0"
+                  >
+                    <ChevronRight size={24} />
+                  </button>
+                </>
+              ) : (
+                <div className="w-[200px] md:w-[280px] h-10" />
+              )}
             </div>
 
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setView(view === 'month' ? 'year' : 'month')}
+                title={view === 'month' ? 'Yearly View' : 'Monthly View'}
+                className="p-2 bg-zinc-100/50 dark:bg-zinc-800/50 backdrop-blur-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl text-zinc-500 dark:text-zinc-400 hover:scale-110 transition-transform border border-zinc-200/50 dark:border-zinc-700/50 flex-shrink-0"
+              >
+                {view === 'month' ? <LayoutGrid size={20} /> : <CalendarIcon size={20} />}
+              </button>
+
               <button
                 onClick={handleDownload}
                 title="Download Calendar"

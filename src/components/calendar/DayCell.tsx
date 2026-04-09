@@ -3,7 +3,7 @@ import { format, isSameMonth, isSameDay, isBefore, startOfToday } from 'date-fns
 import { useGesture } from '@use-gesture/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../lib/utils';
-import { Holiday } from '../../types/calendar';
+import { Holiday, Note } from '../../types/calendar';
 
 interface DayCellProps {
   date: Date;
@@ -13,9 +13,7 @@ interface DayCellProps {
   isRangeStart: boolean;
   isRangeEnd: boolean;
   holiday?: Holiday;
-  hasNote: boolean;
-  noteContent?: string;
-  noteColor?: string;
+  dayNotes: Note[];
   isFocused: boolean;
   isDragging: boolean;
   onClick: () => void;
@@ -35,9 +33,7 @@ export const DayCell: React.FC<DayCellProps> = React.memo(({
   isRangeStart,
   isRangeEnd,
   holiday,
-  hasNote,
-  noteContent,
-  noteColor,
+  dayNotes,
   isFocused,
   isDragging,
   onClick,
@@ -85,7 +81,7 @@ export const DayCell: React.FC<DayCellProps> = React.memo(({
         if (!isDragging) {
           onClick();
           // Toggle tooltip on click (works for both mobile tap and desktop click)
-          if (holiday || (hasNote && noteContent)) {
+          if (holiday || dayNotes.length > 0) {
             setShowTooltip(prev => !prev);
           }
         }
@@ -143,40 +139,54 @@ export const DayCell: React.FC<DayCellProps> = React.memo(({
         />
       )}
 
-      {hasNote && !isSelected && (
-        <div 
-          className={cn(
-            "absolute bottom-2 w-1.5 h-1.5 rounded-full shadow-sm transition-transform group-hover:scale-125",
-            !noteColor && "bg-[var(--primary)] opacity-60 dark:opacity-80"
-          )} 
-          style={noteColor ? { backgroundColor: noteColor } : undefined}
-        />
+      {dayNotes.length > 0 && !isSelected && (
+        <div className="absolute bottom-2 flex gap-0.5 justify-center w-full px-1 overflow-hidden">
+          {dayNotes.slice(0, 3).map((note, idx) => (
+            <div 
+              key={note.id}
+              className={cn(
+                "w-1.5 h-1.5 rounded-full shadow-sm transition-transform group-hover:scale-125 shrink-0",
+                !note.color && "bg-[var(--primary)] opacity-60 dark:opacity-80"
+              )} 
+              style={note.color ? { backgroundColor: note.color } : undefined}
+            />
+          ))}
+          {dayNotes.length > 3 && (
+            <div className="w-1 h-1 rounded-full bg-zinc-400 shrink-0 self-center" />
+          )}
+        </div>
       )}
 
       {/* Tooltip */}
       <AnimatePresence>
-        {showTooltip && (holiday || (hasNote && noteContent)) && (
+        {showTooltip && (holiday || dayNotes.length > 0) && (
           <motion.div 
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 5, scale: 0.95 }}
             className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 z-[100] pointer-events-none"
           >
-            <div className="bg-zinc-900/90 dark:bg-zinc-100/90 backdrop-blur-md text-white dark:text-zinc-900 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-2xl whitespace-nowrap border border-white/10 dark:border-zinc-900/10 flex items-center gap-2">
+            <div className="bg-zinc-900/90 dark:bg-zinc-100/90 backdrop-blur-md text-white dark:text-zinc-900 text-[10px] font-bold px-3 py-1.5 rounded-2xl shadow-2xl whitespace-nowrap border border-white/10 dark:border-zinc-900/10 flex flex-col gap-1 min-w-[120px]">
               {holiday && (
-                <div className={cn(
-                  "w-1.5 h-1.5 rotate-45",
-                  holiday.type === 'public' ? "bg-indigo-500" : "bg-cyan-500"
-                )} />
+                <div className="flex items-center gap-2 border-b border-white/10 dark:border-zinc-900/10 pb-1 mb-1">
+                  <div className={cn(
+                    "w-1.5 h-1.5 rotate-45 shrink-0",
+                    holiday.type === 'public' ? "bg-indigo-500" : "bg-cyan-500"
+                  )} />
+                  <span>{holiday.name}</span>
+                </div>
               )}
-              <div className="flex flex-col gap-0.5">
-                {holiday && <span>{holiday.name}</span>}
-                {hasNote && noteContent && (
-                  <span className={cn(holiday ? "opacity-70 font-medium" : "")}>
-                    {noteContent}
+              {dayNotes.map((note, idx) => (
+                <div key={note.id} className="flex items-center gap-2">
+                  <div 
+                    className="w-1.5 h-1.5 rounded-full shrink-0" 
+                    style={{ backgroundColor: note.color || 'var(--primary)' }}
+                  />
+                  <span className={cn("truncate max-w-[150px]", holiday || idx > 0 ? "opacity-70 font-medium" : "")}>
+                    {note.content}
                   </span>
-                )}
-              </div>
+                </div>
+              ))}
             </div>
             {/* Arrow */}
             <div className="w-2 h-2 bg-zinc-900/90 dark:bg-zinc-100/90 rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2 border-r border-b border-white/10 dark:border-zinc-900/10" />

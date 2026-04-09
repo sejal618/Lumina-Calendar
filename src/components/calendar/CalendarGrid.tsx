@@ -59,7 +59,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = React.memo(({
       </div>
 
       <div className="grid grid-cols-7 gap-2 mb-6">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
           <div key={day} className="text-center text-[10px] font-black text-zinc-300 dark:text-zinc-700 uppercase tracking-[0.3em] py-2">
             {day}
           </div>
@@ -79,10 +79,6 @@ export const CalendarGrid: React.FC<CalendarGridProps> = React.memo(({
             }
             return false;
           });
-          
-          const hasNote = dayNotes.length > 0;
-          const noteContent = dayNotes[0]?.content;
-          const noteColor = dayNotes[0]?.color;
 
           return (
             <DayCell
@@ -94,9 +90,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = React.memo(({
               isRangeStart={isRangeStart(day)}
               isRangeEnd={isRangeEnd(day)}
               holiday={holiday}
-              hasNote={hasNote}
-              noteContent={noteContent}
-              noteColor={noteColor}
+              dayNotes={dayNotes}
               isFocused={isSameDay(day, focusedDate)}
               isDragging={isDragging}
               onClick={() => handleDateClick(day)}

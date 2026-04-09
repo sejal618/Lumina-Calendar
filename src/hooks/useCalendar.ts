@@ -57,8 +57,8 @@ export function useCalendar() {
   }, [customImages]);
 
   const days = useMemo(() => {
-    const start = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 0 });
-    const end = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 0 });
+    const start = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 1 });
+    const end = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 1 });
     return eachDayOfInterval({ start, end });
   }, [currentDate]);
 
@@ -75,6 +75,14 @@ export function useCalendar() {
       const prevM = subMonths(prev, 1);
       setFocusedDate(startOfMonth(prevM));
       return prevM;
+    });
+  }, []);
+
+  const goToMonth = useCallback((monthIndex: number) => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev.getFullYear(), monthIndex, 1);
+      setFocusedDate(newDate);
+      return newDate;
     });
   }, []);
 
@@ -151,6 +159,7 @@ export function useCalendar() {
     setFocusedDate,
     nextMonth,
     prevMonth,
+    goToMonth,
     handleDateClick,
     setRangeStart,
     updateRangeEnd,
