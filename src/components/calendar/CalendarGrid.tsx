@@ -1,5 +1,6 @@
 import React from 'react';
 import { format, isSameDay } from 'date-fns';
+import { cn } from '../../lib/utils';
 import { DayCell } from './DayCell';
 import { Holiday, Note, DateRange } from '../../types/calendar';
 import { HOLIDAYS } from '../../constants/calendar';
@@ -59,8 +60,14 @@ export const CalendarGrid: React.FC<CalendarGridProps> = React.memo(({
       </div>
 
       <div className="grid grid-cols-7 gap-2 mb-6">
-        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-          <div key={day} className="text-center text-[10px] font-black text-zinc-300 dark:text-zinc-700 uppercase tracking-[0.3em] py-2">
+        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, idx) => (
+          <div 
+            key={day} 
+            className={cn(
+              "text-center text-[10px] font-black uppercase tracking-[0.3em] py-2 transition-colors duration-500",
+              idx >= 5 ? "text-[var(--primary)] opacity-80" : "text-zinc-300 dark:text-zinc-700"
+            )}
+          >
             {day}
           </div>
         ))}

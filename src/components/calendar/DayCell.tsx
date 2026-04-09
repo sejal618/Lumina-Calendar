@@ -47,6 +47,7 @@ export const DayCell: React.FC<DayCellProps> = React.memo(({
   const isCurrentMonth = isSameMonth(date, currentMonth);
   const isToday = isSameDay(date, new Date());
   const isPast = isBefore(date, startOfToday());
+  const isWeekend = date.getDay() === 0 || date.getDay() === 6;
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -120,7 +121,8 @@ export const DayCell: React.FC<DayCellProps> = React.memo(({
     >
       <span className={cn(
         "font-medium relative z-10 transition-transform duration-300 group-hover:scale-110",
-        isSelected && "font-bold"
+        isSelected && "font-bold",
+        isWeekend && !isSelected && !isInRange && isCurrentMonth && "text-[var(--primary)] opacity-70"
       )}>
         {format(date, 'd')}
       </span>

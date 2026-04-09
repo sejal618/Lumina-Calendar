@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { StickyNote, Trash2, Plus, X, Calendar as CalendarIcon } from 'lucide-react';
+import React, { useState, useMemo, useRef } from 'react';
+import { StickyNote, Trash2, Plus, X, Calendar as CalendarIcon, Palette } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Note, DateRange } from '../../types/calendar';
 import { format } from 'date-fns';
@@ -31,6 +31,7 @@ export const NotesPanel: React.FC<NotesPanelProps> = React.memo(({
   const NOTE_COLORS = NOTE_PALETTES[monthIndex] || [];
   
   const [selectedColor, setSelectedColor] = useState<string | undefined>(NOTE_COLORS[0]?.value);
+  const colorInputRef = useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     setSelectedColor(NOTE_COLORS[0]?.value);
@@ -182,6 +183,30 @@ export const NotesPanel: React.FC<NotesPanelProps> = React.memo(({
               title={color.name}
             />
           ))}
+          
+          <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700 mx-1" />
+          
+          <button
+            onClick={() => colorInputRef.current?.click()}
+            className={cn(
+              "w-6 h-6 rounded-full transition-all border-2 flex items-center justify-center bg-white dark:bg-zinc-800",
+              selectedColor && !NOTE_COLORS.some(c => c.value === selectedColor)
+                ? "border-zinc-900 dark:border-white scale-110 shadow-md" 
+                : "border-zinc-200 dark:border-zinc-700 opacity-60 hover:opacity-100 hover:scale-105"
+            )}
+            title="Custom Color"
+            style={selectedColor && !NOTE_COLORS.some(c => c.value === selectedColor) ? { backgroundColor: selectedColor } : undefined}
+          >
+            <Palette size={12} className={cn(
+              selectedColor && !NOTE_COLORS.some(c => c.value === selectedColor) ? "text-white mix-blend-difference" : "text-zinc-400"
+            )} />
+            <input
+              ref={colorInputRef}
+              type="color"
+              className="sr-only"
+              onChange={(e) => setSelectedColor(e.target.value)}
+            />
+          </button>
         </div>
 
         <div className="relative">
